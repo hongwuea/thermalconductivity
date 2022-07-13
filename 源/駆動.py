@@ -11,6 +11,19 @@ print("仪器驱动文件被调用...__name__=" + __name__)
 def 多线程调度器(函数):
     def 闭包(*args, **kwargs):
         占用.wait()
+        # time.sleep(0.1)
+        占用.wait()
+        占用.clear()
+        返回 = 函数(*args, **kwargs)
+        占用.set()
+        return 返回
+
+    return 闭包
+
+
+def 多线程调度器延时(函数):
+    def 闭包(*args, **kwargs):
+        占用.wait()
         time.sleep(0.1)
         占用.wait()
         占用.clear()
@@ -25,7 +38,7 @@ class Ls370:
     def __init__(self, GPIB号):
         self.Ls3 = 管理器.open_resource(f'GPIB0::{GPIB号}::INSTR')
 
-    @多线程调度器
+    @多线程调度器延时
     def 读电阻(self):
         return float(self.Ls3.query("RDGR?"))
 
@@ -34,35 +47,35 @@ class Ls350:
     def __init__(self, GPIB号):
         self.Ls3 = 管理器.open_resource(f'GPIB0::{GPIB号}::INSTR')
 
-    @多线程调度器
+    @多线程调度器延时
     def 读电阻(self, 通道='B'):
         return float(self.Ls3.query(f"SRDG?{通道}"))
 
-    @多线程调度器
+    @多线程调度器延时
     def 读温度(self, 通道='B'):
         return float(self.Ls3.query(f"KRDG?{通道}"))
 
-    @多线程调度器
+    @多线程调度器延时
     def 读加热(self, 通道=2):
         return float(self.Ls3.query(f"HTR?{通道}"))
 
-    @多线程调度器
+    @多线程调度器延时
     def 读加热量程(self, 通道=2):
         return int(self.Ls3.query(f"RANGE?{通道}"))
 
-    @多线程调度器
+    @多线程调度器延时
     def 设加热量程(self, 通道=2, 量程=0):
         self.Ls3.write(f"RANGE{通道},{量程}")
 
-    @多线程调度器
+    @多线程调度器延时
     def 设温度(self, 值, 通道=2):  # 这里注意用4.1E1这种科学计数法会让340不识别，默认的17位浮点数即可
         self.Ls3.write(f"SETP{通道},{值}")
 
-    @多线程调度器
+    @多线程调度器延时
     def 设PID(self, P, I=60, D=0, 通道=2):
         self.Ls3.write(f"PID,{通道},{P},{I},{D}")
 
-    @多线程调度器
+    @多线程调度器延时
     def 扫引控温(self, 目标温度=250, 扫引速度K每min=0.1, 加热=0):
         # 当前温度 = float(self.Ls3.query(f"KRDG? B"))
         # self.Ls3.write(f'RAMP 1,0,{扫引速度K每min}')
@@ -76,35 +89,35 @@ class Ls340:
     def __init__(self, GPIB号):
         self.Ls3 = 管理器.open_resource(f'GPIB0::{GPIB号}::INSTR')
 
-    @多线程调度器
+    @多线程调度器延时
     def 读电阻(self, 通道='B'):
         return float(self.Ls3.query(f"SRDG?{通道}"))
 
-    @多线程调度器
+    @多线程调度器延时
     def 读温度(self, 通道='B'):
         return float(self.Ls3.query(f"KRDG?{通道}"))
 
-    @多线程调度器
+    @多线程调度器延时
     def 读加热(self, 通道=1):
         return float(self.Ls3.query(f"HTR?{通道}"))
 
-    @多线程调度器
+    @多线程调度器延时
     def 读加热量程(self, 通道=1):
         return int(self.Ls3.query(f"RANGE?{通道}"))
 
-    @多线程调度器
+    @多线程调度器延时
     def 设加热量程(self, 通道=1, 量程=0):
         self.Ls3.write(f"RANGE{通道},{量程}")
 
-    @多线程调度器
+    @多线程调度器延时
     def 设温度(self, 值, 通道=1):  # 这里注意用4.1E1这种科学计数法会让340不识别，默认的17位浮点数即可
         self.Ls3.write(f"SETP{通道},{值}")
 
-    @多线程调度器
+    @多线程调度器延时
     def 设PID(self, P, I=60, D=0, 通道=1):
         self.Ls3.write(f"PID,{通道},{P},{I},{D}")
 
-    @多线程调度器
+    @多线程调度器延时
     def 扫引控温(self, 目标温度=50, 扫引速度K每min=1, 加热=3):
         当前温度 = float(self.Ls3.query(f"KRDG? B"))
         self.Ls3.write(f'RAMP 1,0,{扫引速度K每min}')

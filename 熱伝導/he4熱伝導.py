@@ -7,7 +7,7 @@ import numpy as np
 import pyqtgraph as pg
 
 from 源.駆動 import Ls350, K2182, K6220
-from 源.源 import 日志, 温度计转换简易, 热浴稳定, 温度计转换
+from 源.源 import 日志, 温度计转换简易, 热浴稳定新, 温度计转换
 
 初始温度 = 1.8
 終了温度 = 30
@@ -20,17 +20,18 @@ from 源.源 import 日志, 温度计转换简易, 热浴稳定, 温度计转换
 初始时间 = time.time()
 数据表 = [时间表, 温度表, 高低时间表, 高侧表, 低侧表, 结果温度, 结果热导] = [[] for _ in range(7)]
 线程锁1 = Lock()
+
 Ls350_1 = Ls350(GPIB号=19)  # 350温控器约定：C=低温计，D=高温计，A,B使用非翻转的10mV激励，CD使用翻转1mV激励
-热浴 = ['B', '热浴', '热浴逆']  # channal、校正曲線
-高 = ['C', '热浴']
+热浴 = ['B', '热浴', '热浴逆', 2]  # 通道，校正曲线，逆曲线，输出通道
+高 = ['C', '高温侧']
+低 = ['D', '低温侧']
 K2182_1 = K2182(GPIB号=17)
 K6220_1 = K6220(GPIB号=13)
-Ls350加热环路号 = 2
 
 
 def 热浴作图():
     while 1:
-        热浴温度 = 温度计转换(Ls350_1.读电阻(通道='B'), '热浴')
+        热浴温度 = 温度计转换(Ls350_1.读电阻(通道=热浴[0]), 热浴[1])
         with 线程锁1:
             温度表.append(热浴温度)
             时间表.append(time.time() - 初始时间)
@@ -50,6 +51,8 @@ def 测定():
     结果文件 = open(f'结果/结果低温{time.strftime("%H時%M分%S秒%Y年%m月%d日", time.localtime())}.txt', mode='a', encoding='utf-8')
     结果文件.write('时间秒\t热浴温度K\tκ\t变异系数\t时间常数平均\n')
     print("\n创建文件成功\n")
+
+    # Ls350初始化
     while (设定温度 - 終了温度) * (设定温度 - 初始温度) <= 0:
         小循环初始时间 = time.time()
         高低时间表.clear()
@@ -60,34 +63,27 @@ def 测定():
         print(f'新温度循环')
         K6220_1.设电流(0)
         print(f'调节热浴温度为{设定温度}K')
-        热浴稳定(设定温度, Ls350加热环路号)
+        热浴稳定新(设定温度, 热浴)
 
         for i in range(平均回数):
             print(f'温度{设定温度}K下的第{i + 1}次测量开始')
             print(f'新设定点数={设定点数}个，设定电流={设定电流:e}A\n开始取REL')
-            for _ in range(100):
-                小循环时间 = time.time()
-                低 = 温度计转换简易(Ls350_1.读电阻(通道='C'), '低温侧')
-                time.sleep(0.1)
-                高 = 温度计转换简易(Ls350_1.读电阻(通道='D'), '高温侧')
-                time.sleep(0.1)
-                with 线程锁1:
-                    高侧表.append(高)
-                    低侧表.append(低)
-                    高低时间表.append(小循环时间 - 小循环初始时间)
+
+            def 高低温侧取值(次数):
+                for _ in range(次数):
+                    小循环时间 = time.time()
+                    低温侧 = 温度计转换简易(Ls350_1.读电阻(通道=低[0]), 低[1])
+                    高温侧 = 温度计转换简易(Ls350_1.读电阻(通道=高[0]), 高[1])
+                    with 线程锁1:
+                        高侧表.append(高温侧)
+                        低侧表.append(低温侧)
+                        高低时间表.append(小循环时间 - 小循环初始时间)
+
+            高低温侧取值(100)
             REL = np.mean(高侧表[-100::]) - np.mean(低侧表[-100::])
             print(f'REL={REL}K，开始升温。。。')
             K6220_1.设电流(设定电流)
-            for _ in range(设定点数):
-                小循环时间 = time.time()
-                低 = 温度计转换简易(Ls350_1.读电阻(通道='C'), '低温侧')
-                time.sleep(0.1)
-                高 = 温度计转换简易(Ls350_1.读电阻(通道='D'), '高温侧')
-                time.sleep(0.1)
-                with 线程锁1:
-                    高侧表.append(高)
-                    低侧表.append(低)
-                    高低时间表.append(小循环时间 - 小循环初始时间)
+            高低温侧取值(设定点数)
             晶中温度 = (np.mean(高侧表[-100:]) + np.mean(低侧表[-100:])) / 2
             ΔT = np.mean(高侧表[-100:]) - np.mean(低侧表[-100:]) - REL
             加热器正电压 = np.mean([K2182_1.读电压() for _ in range(5)])
@@ -109,21 +105,12 @@ def 测定():
                   f'设定温度={设定温度}\t温度差={ΔT}K\t相对热导{κ}V/W\t时间常数={τ}s\t时间偏离={t_0}s\n结束小循环')
             print(f'等待{max(30, min(5 * τ, 600)):.4g}秒降温缓和')
             设定电流 = min(设定电流 * ((期望温差 / ΔT * min(1, (设定温度 / 40))) ** 0.5), 0.0002)
-            for _ in range(int(max(30, min(5 * τ, 600)))):
-                小循环时间 = time.time()
-                高 = 温度计转换简易(Ls350_1.读电阻(通道='D'), '高温侧')
-                time.sleep(0.3)
-                低 = 温度计转换简易(Ls350_1.读电阻(通道='C'), '低温侧')
-                time.sleep(0.3)
-                with 线程锁1:
-                    高侧表.append(高)
-                    低侧表.append(低)
-                    高低时间表.append(小循环时间 - 小循环初始时间)
+            高低温侧取值(int(max(30, min(5 * τ, 600)))*2)
         结果文件.write(f'{int(time.time() - 初始时间)}\t{设定温度}\t{np.mean(κ表)}\t{np.std(κ表) / np.mean(κ表)}\t{np.mean(τ表)}\n')
         结果文件.flush()
         设定温度 = 设定温度 - 降温間隔 * min(1, 设定温度 / 40)
         print(高侧表, 低侧表)
-    热浴稳定(1, Ls350加热环路号)
+    热浴稳定新(1, 热浴)
 
 
 if __name__ == '__main__':
@@ -145,8 +132,8 @@ if __name__ == '__main__':
         右图.setLabel(axis='bottom', text='时间/s', )
         右图.addLegend()
         if 1:  # 窗口内曲线4级
-            高 = 右图.plot(高低时间表, 高侧表, pen='b', name='高', symbol='o', symbolBrush='b')
-            低 = 右图.plot(高低时间表, 低侧表, pen='r', name='低', symbol='o', symbolBrush='r')
+            高温侧曲线 = 右图.plot(高低时间表, 高侧表, pen='b', name='高', symbol='o', symbolBrush='b')
+            低温侧曲线 = 右图.plot(高低时间表, 低侧表, pen='r', name='低', symbol='o', symbolBrush='r')
 
         结果图 = 窗口.addPlot(title="热导-温度")
         结果图.setLabel(axis='left', text='热导/WK-1')
@@ -160,8 +147,8 @@ if __name__ == '__main__':
     def 定时更新f():
         with 线程锁1:
             热浴.setData(时间表, 温度表)
-            高.setData(高低时间表, 高侧表)
-            低.setData(高低时间表, 低侧表)
+            高温侧曲线.setData(高低时间表, 高侧表)
+            低温侧曲线.setData(高低时间表, 低侧表)
             结果曲线.setData(结果温度, 结果热导)
 
 
