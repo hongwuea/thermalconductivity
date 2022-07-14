@@ -1,2 +1,2 @@
-print('dsdfdsd'
-      'rrsdfsdffsd')
+热浴 = ['B', '热浴', '热浴逆', 2]
+print(type(热浴[0]))

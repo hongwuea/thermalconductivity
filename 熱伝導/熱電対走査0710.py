@@ -24,10 +24,9 @@ from 源.駆動 import Ls350, K2182, K6220
 初始猜测参数 = [2, 10, 1]
 线程锁1 = Lock()
 Ls350_1 = Ls350(GPIB号=19)
-热浴 = ['B', '热浴']
+热浴 = ['B', '热浴', '热浴逆', 2]
 K2182_1 = K2182(GPIB号=17)
 K6220_1 = K6220(GPIB号=13)
-Ls350加热环路号 = 2
 
 
 def 热浴作图():
@@ -132,13 +131,13 @@ if __name__ == '__main__':
         左图.setLabel(axis='left', text='温度/K')
         左图.setLabel(axis='bottom', text='时间/s', )
         if 1:  # 窗口内曲线4级
-            热浴 = 左图.plot(时间表, 温度表, pen='g', name='热浴', symbol='o', symbolBrush='g')
+            热浴侧曲线 = 左图.plot(时间表, 温度表, pen='g', name='热浴', symbol='o', symbolBrush='g')
 
         右图 = 窗口.addPlot(title="温升")
         右图.setLabel(axis='left', text='温度/K')
         右图.setLabel(axis='bottom', text='时间/s', )
         if 1:  # 窗口内曲线4级
-            高 = 右图.plot(高低时间表, 温差表, pen='b', name='高', symbol='o', symbolBrush='b')
+            高侧曲线 = 右图.plot(高低时间表, 温差表, pen='b', name='高', symbol='o', symbolBrush='b')
 
         结果图 = 窗口.addPlot(title="热导-温度")
         结果图.setLabel(axis='left', text='热导/WK^-1')
@@ -151,8 +150,8 @@ if __name__ == '__main__':
 
     def 定时更新f():
         with 线程锁1:
-            热浴.setData(时间表, 温度表)
-            高.setData(高低时间表, 温差表)
+            热浴侧曲线.setData(时间表, 温度表)
+            高侧曲线.setData(高低时间表, 温差表)
             结果曲线.setData(结果温度, 结果热导)
 
 
