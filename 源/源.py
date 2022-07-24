@@ -1,7 +1,7 @@
 import sys
 import numpy as np
 import time
-from 源.駆動 import Ls350
+from 源.駆動old import Ls350
 
 稳定常数 = 300  # 高值要求更高
 稳定次数 = 3

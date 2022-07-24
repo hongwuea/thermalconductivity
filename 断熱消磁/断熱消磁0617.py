@@ -4,7 +4,7 @@ from threading import Thread, Lock
 # import numpy as np
 import pyqtgraph as pg
 
-from 源.駆動 import Ls350, K2182, Ls370
+from 源.駆動old import Ls350, K2182, Ls370
 from 源.源 import 日志, 温度计转换
 
 数据表 = [时间表, 温度表, 高侧表, 低侧表, 磁场表] = [[] for _ in range(5)]
