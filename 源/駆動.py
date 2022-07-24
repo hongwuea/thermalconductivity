@@ -142,6 +142,15 @@ class K2182:
             self.K2.write(':SENS:CHAN 1')
         return 结果
 
+    def 读通道2后切回(self):
+        with GPIB锁:
+            self.K2.write(':SENS:CHAN 2')
+        time.sleep(0.5)
+        with GPIB锁:
+            结果 = float(self.K2.query(":DATA:FRESH?"))
+            self.K2.write(':SENS:CHAN 1')
+        return 结果
+
 
 class K6220:
     def __init__(self, GPIB号):
