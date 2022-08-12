@@ -6,7 +6,7 @@ from threading import Thread, Lock
 import numpy as np
 import pyqtgraph as pg
 
-from 源.駆動old import Ls350, K2182, K6220
+from 源.駆動 import Ls350, K2182, K6220
 from 源.源 import 日志, 热浴稳定, 温度计转换
 
 初始温度 = 1.8
@@ -23,8 +23,8 @@ from 源.源 import 日志, 热浴稳定, 温度计转换
 
 Ls350_1 = Ls350(GPIB号=19)  # 350温控器约定：C=低温计，D=高温计，A,B使用非翻转的10mV激励，CD使用翻转1mV激励
 热浴 = ['B', '热浴', '热浴逆', 2]  # 通道，校正曲线，逆曲线，输出通道
-低 = ['C', '热导20220713左']
-高 = ['D', '热导20220713右']
+低 = ['D', '热导20220713上']
+高 = ['C', '热导20220713右']
 K2182_1 = K2182(GPIB号=17)
 K6220_1 = K6220(GPIB号=13)
 
