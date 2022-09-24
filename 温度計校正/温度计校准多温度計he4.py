@@ -6,8 +6,8 @@ from threading import Thread, Lock
 import numpy as np
 import pyqtgraph as pg
 
-from 源.駆動old import Ls350
-from 源.源 import 日志, 温度计转换, 热浴稳定新
+from 源.駆動 import Ls350
+from 源.源 import 日志, 温度计转换, 热浴稳定
 
 初始温度 = 1.8
 終了温度 = 40
@@ -37,14 +37,14 @@ def 测定():
     sys.stdout = 日志(f'日志/校正日志{time.strftime("%H時%M分%S秒 %Y年%m月%d日", time.localtime())}.log')
     if not os.path.exists(r'结果'):
         os.makedirs(r'结果')
-    结果文件 = open(f'结果/温度计校准结果{time.strftime("%H時%M分%S秒%Y年%m月%d日", time.localtime())}.txt', mode='a', encoding='utf-8')
+    结果文件 = open(f'结果/温度计校准ACD1T结果{time.strftime("%H時%M分%S秒%Y年%m月%d日", time.localtime())}.txt', mode='a', encoding='utf-8')
     结果文件.write('时间秒\t热浴温度\tA\tB\tC\tD\n')
     print("\n创建文件成功\n")
     Ls350_1.设加热量程(量程=1)
     while (设定温度 - 終了温度) * (设定温度 - 初始温度) <= 0:
         print('---------------------少女祈禱中。。。--------------------')
         print(f'新温度循环')
-        热浴稳定新(设定温度, 热浴温度計)
+        热浴稳定(设定温度, 热浴温度計)
 
         for i in range(平均点数):
             time.sleep(0.5)
@@ -57,7 +57,7 @@ def 测定():
         结果文件.flush()
 
         设定温度 = 设定温度 - 降温間隔 * min(1, 设定温度 / 40)
-    热浴稳定新(1, 热浴温度計)
+    热浴稳定(1, 热浴温度計)
 
 
 if __name__ == '__main__':

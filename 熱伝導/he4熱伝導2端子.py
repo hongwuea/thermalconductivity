@@ -20,11 +20,11 @@ from 源.源 import 日志, 热浴稳定, 温度计转换
 初始时间 = time.time()
 数据表 = [时间表, 温度表, 高低时间表, 高侧表, 低侧表, 结果温度, 结果热导] = [[] for _ in range(7)]
 线程锁1 = Lock()
-ファイル名='面内3T'
+ファイル名='3端子8T'
 Ls350_1 = Ls350(GPIB号=19)  # 350温控器约定：C=低温计，D=高温计，A,B使用非翻转的10mV激励，CD使用翻转1mV激励
 热浴 = ['B', '热浴', '热浴逆', 2]  # 通道，校正曲线，逆曲线，输出通道
-低 = ['D', '热导左3T']
-高 = ['C', '热导右3T']
+# 低 = ['D', '热导上1T']
+高 = ['C', '热导左8T']
 K2182_1 = K2182(GPIB号=17)
 K6220_1 = K6220(GPIB号=13)
 
@@ -43,7 +43,7 @@ def 测定():
     设定温度, 设定点数, 设定电流 = 初始温度, 初始点数, 初始电流
     if not os.path.exists(r'日志'):
         os.makedirs(r'日志')
-    sys.stdout = 日志(f'日志/低温{time.strftime("%H時%M分%S秒 %Y年%m月%d日", time.localtime())}.log')
+    sys.stdout = 日志(f'日志/低温{ファイル名}{time.strftime("%H時%M分%S秒 %Y年%m月%d日", time.localtime())}.log')
     if not os.path.exists(r'结果'):
         os.makedirs(r'结果')
     平均前文件 = open(f'结果/平均前{ファイル名}低温{time.strftime("%H時%M分%S秒%Y年%m月%d日", time.localtime())}.txt', mode='a', encoding='utf-8')
@@ -73,7 +73,7 @@ def 测定():
             def 高低温侧取值(次数):
                 for _ in range(次数):
                     小循环时间 = time.time()
-                    低温侧 = 温度计转换(Ls350_1.读电阻(通道=低[0]), 低[1])
+                    低温侧 = 温度计转换(Ls350_1.读电阻(通道=热浴[0]), 热浴[1])
                     高温侧 = 温度计转换(Ls350_1.读电阻(通道=高[0]), 高[1])
                     with 线程锁1:
                         高侧表.append(高温侧)
