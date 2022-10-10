@@ -152,6 +152,15 @@ class K2182:
         return 结果
 
 
+class K195:
+    def __init__(self, GPIB号):
+        self.K2 = 管理器.open_resource(f'GPIB0::{GPIB号}::INSTR')
+
+    def 读电压(self):
+        with GPIB锁:
+            return float(self.K2.query("X").split("NDCV")[1])
+
+
 class K6220:
     def __init__(self, GPIB号):
         self.K6 = 管理器.open_resource(f'GPIB0::{GPIB号}::INSTR')

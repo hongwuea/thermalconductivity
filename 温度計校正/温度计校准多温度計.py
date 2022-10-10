@@ -8,8 +8,8 @@ from threading import Thread, Lock
 import numpy as np
 import pyqtgraph as pg
 
-from 源.駆動old import Ls350
-from 源.源 import 日志, 温度计转换, 热浴稳定
+from 源.駆動 import Ls350
+from 源.源 import 日志, 温度计转换
 
 初始时间 = time.time()
 数据表 = [时间表, 温度表, 高低时间表, A表, B表, C表, D表] = [[] for _ in range(7)]
@@ -17,15 +17,15 @@ from 源.源 import 日志, 温度计转换, 热浴稳定
 Ls350_1 = Ls350(GPIB号=19)  # 350温控器约定：C=低温计，D=高温计，A,B使用非翻转的10mV激励，CD使用翻转1mV激励
 
 Ls350加热环路号 = 2
-
-
-def 热浴作图():
-    while 1:
-        热浴温度 = 温度计转换(Ls350_1.读电阻(通道='B'), '热浴')
-        time.sleep(3)
-        with 线程锁1:
-            温度表.append(热浴温度)
-            时间表.append(time.time() - 初始时间)
+#
+#
+# def 热浴作图():
+#     while 1:
+#         热浴温度 = 温度计转换(Ls350_1.读电阻(通道='B'), '热浴1030br202206he3')
+#         time.sleep(3)
+#         with 线程锁1:
+#             温度表.append(热浴温度)
+#             时间表.append(time.time() - 初始时间)
 
 
 def 测定():
@@ -74,7 +74,7 @@ if __name__ == '__main__':
 
     def 定时更新f():
         A, B, C, D = map(lambda x: Ls350_1.读电阻(通道=x), ['A', 'B', 'C', 'D'])
-        热浴温度 = 温度计转换(B, '热浴')
+        热浴温度 = 温度计转换(B, '热浴1030br202206he3')
         print(f"{time.time() - 初始时间}\t{热浴温度}\t{A}\t{B}\t{C}\t{D}")
         list(map(lambda x, y: x.append(y), [时间表, 温度表, A表, B表, C表, D表], [time.time() - 初始时间, 热浴温度, A, B, C, D]))
         热浴.setData(时间表, 温度表)
@@ -86,5 +86,5 @@ if __name__ == '__main__':
     定时器.start(3000)
     # print("准备加载图像...")
     # Thread(target=测定).start()
-    Thread(target=热浴作图).start()
+    # Thread(target=热浴作图).start()
     pg.mkQApp().exec_()
