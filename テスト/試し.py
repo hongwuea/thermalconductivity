@@ -1,1 +1,4 @@
-print("NDCV+00.0392E-3".split("NDCV")[1])
+import numpy as np
+from scipy.optimize import root, brentq
+
+print(brentq(lambda ρ: np.exp(-1 / ρ) + np.exp(-2 / ρ) - 1, 0.001, 100))
