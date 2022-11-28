@@ -1,21 +1,25 @@
 import time
 from threading import Thread, Lock
 import pyqtgraph as pg
+import os
+import numpy as np
 
-from 源.駆動 import Ls350, K2182, K6220, K195, GPIB锁
-from 源.源 import 热浴稳定, 温度计转换, 塞贝克系数
+from 源.駆動 import Ls350, K6220, SR850, GPIB锁
+from 源.源 import 温度计转换
 
 初始时间 = time.time()
-数据表 = [时间表, 温度表, 高低时间表, 高侧表, 高侧表2, 低侧表, 低侧表2, 结果温度, 结果热导, 温差表, 温差表2, 电压时间表] = [[] for _ in range(12)]
+数据表 = [时间表, 温度表, XY时间表, X表, Y表] = [[] for _ in range(5)]
+数据表2 = [C1表, 温度1表, C2表, 温度2表] = [[] for _ in range(4)]
 线程锁1 = Lock()
-ファイル名 = 'テスト3'
+ファイル名 = '容量測定自然降温'
 Ls350_1 = Ls350(GPIB号=19)
 热浴 = ['B', '热浴', '热浴逆', 2]  # 通道，校正曲线，逆曲线，输出通道
-低 = ['D', '热导左1T']
-高 = ['C', '热导右1T']
-K2182_1 = K2182(GPIB号=17)
+# 低 = ['D', '热导左1T']
+# 高 = ['C', '热导右1T']
+# K2182_1 = K2182(GPIB号=17)
 K6220_1 = K6220(GPIB号=13)
-K199_1 = K195(GPIB号=26)
+# K199_1 = K195(GPIB号=26)
+SR850_1 = SR850(GPIB号=6)
 
 
 def 热浴作图():
@@ -29,48 +33,64 @@ def 热浴作图():
 
 def 测定():
     K6220_1.K6.write('CALC3:FORC:STAT ON')
-    热浴稳定(180, 热浴)
-    for _ in range(2):
+    while 1:
         with GPIB锁:
             K6220_1.K6.write('CALC3:FORC:PATT 15')
-            K2182_1.K2.write(':sens:volt:rang:auto on')
-        time.sleep(3)
-        for _ in range(10000):
+        time.sleep(5)
+        for _ in range(100):
             小循环时间 = time.time()
-            温差 = K2182_1.读电压()
-            温差表2.append(温差)
-            温差 = 温差 / 塞贝克系数(12)
+            X = SR850_1.读取('X')
+            time.sleep(0.2)
+            Y = SR850_1.读取('Y')
             time.sleep(0.2)
             with 线程锁1:
-                温差表.append(温差)
-                电压时间表.append(小循环时间 - 初始时间)
-
-        # 小循环初始时间 = time.time()
+                X表.append(X)
+                Y表.append(Y)
+                XY时间表.append(小循环时间 - 初始时间)
+        温度 = np.mean(温度表[-15::])
+        电容 = 1 / (2 * np.pi * 1000 * 1E-3 * (1 / complex(float(np.mean(X表)), float(np.mean(Y表)))).imag)
+        with 线程锁1:
+            C1表.append(电容)
+            温度1表.append(温度)
+        过程文件.write(str([X表, Y表]))
+        X表.clear()
+        Y表.clear()
+        XY时间表.clear()
 
         with GPIB锁:
-            K2182_1.K2.write(':sens:volt:rang 100')
             K6220_1.K6.write('CALC3:FORC:PATT 0')
-        time.sleep(3)
-        for _ in range(10000):
+        time.sleep(5)
+        for _ in range(100):
             小循环时间 = time.time()
-            低温侧 = Ls350_1.读电阻(通道=低[0])
-            低侧表2.append(低温侧)
-            # 低温侧 = 温度计转换(低温侧, 低[1])
-            高温侧 = Ls350_1.读电阻(通道=高[0])
-            高侧表2.append(高温侧)
-            # 高温侧 = 温度计转换(高温侧, 高[1])
+            X = SR850_1.读取('X')
+            time.sleep(0.2)
+            Y = SR850_1.读取('Y')
+            time.sleep(0.2)
             with 线程锁1:
-                高侧表.append(高温侧)
-                低侧表.append(低温侧)
-                高低时间表.append(小循环时间 - 初始时间)
-
-            温升文件.write(str([电压时间表, 温差表, 温差表2, 高低时间表, 高侧表, 高侧表2, 低侧表, 低侧表2]))
-            温升文件.flush()
+                X表.append(X)
+                Y表.append(Y)
+                XY时间表.append(小循环时间 - 初始时间)
+        温度 = np.mean(温度表[-15::])
+        电容 = 1 / (2 * np.pi * 1000 * 1E-3 * (1 / complex(float(np.mean(X表)), float(np.mean(Y表)))).imag)
+        with 线程锁1:
+            C2表.append(电容)
+            温度2表.append(温度)
+        过程文件.write(str([X表, Y表]) + '\n')
+        结果文件.write(f'{温度1表[-1]}\t{C1表[-1]}\t{温度2表[-1]}\t{C2表[-1]}\n')
+        结果文件.flush()
+        X表.clear()
+        Y表.clear()
+        XY时间表.clear()
 
 
 if __name__ == '__main__':
-    温升文件 = open(f'结果/噪声{ファイル名}低温{time.strftime("%H時%M分%S秒%Y年%m月%d日", time.localtime())}.txt', mode='a',
+    if not os.path.exists(r'容量測定'):
+        os.makedirs(r'容量測定')
+    过程文件 = open(f'容量測定/過程{ファイル名}{time.strftime("%H時%M分%S秒%Y年%m月%d日", time.localtime())}.txt', mode='a',
                 encoding='utf-8')
+    结果文件 = open(f'容量測定/結果{ファイル名}{time.strftime("%H時%M分%S秒%Y年%m月%d日", time.localtime())}.txt', mode='a',
+                encoding='utf-8')
+
     # pg全局1级
     pg.setConfigOption('foreground', 'k')  # 默认文本、线条、轴black
     pg.setConfigOption('background', 'w')  # 默认白背景
@@ -84,19 +104,21 @@ if __name__ == '__main__':
         if 1:  # 窗口内曲线4级
             热浴侧曲线 = 左图.plot(时间表, 温度表, pen='g', name='热浴', symbol='o', symbolBrush='b')
 
-        右图 = 窗口.addPlot(title="温升")
-        右图.setLabel(axis='left', text='温度/K')
+        右图 = 窗口.addPlot(title="原始数据")
+        右图.setLabel(axis='left', text='电压/V')
         右图.setLabel(axis='bottom', text='时间/s', )
         右图.addLegend()
         if 1:  # 窗口内曲线4级
-            高温侧曲线 = 右图.plot(高低时间表, 高侧表, pen='b', name='高', symbol='o', symbolBrush='b')
-            低温侧曲线 = 右图.plot(高低时间表, 低侧表, pen='r', name='低', symbol='o', symbolBrush='r')
+            X曲线 = 右图.plot(XY时间表, X表, pen='b', name='电压', symbol='o', symbolBrush='b')
+            Y曲线 = 右图.plot(XY时间表, Y表, pen='b', name='电压', symbol='o', symbolBrush='r')
 
-        结果图 = 窗口.addPlot(title="温升2")
-        结果图.setLabel(axis='left', text='温度/K')
-        结果图.setLabel(axis='bottom', text='时间/s', )
+        结果图 = 窗口.addPlot(title="结果")
+        结果图.setLabel(axis='left', text='电容/F')
+        结果图.setLabel(axis='bottom', text='温度/K', )
+        结果图.addLegend()
         if 1:  # 窗口内曲线4级
-            结果曲线 = 结果图.plot(电压时间表, 温差表, pen='c', name='热导', symbol='o', symbolBrush='b')
+            结果曲线 = 结果图.plot(温度1表, C1表, pen='c', name='电容1', symbol='o', symbolBrush='b')
+            结果曲线2 = 结果图.plot(温度2表, C2表, pen='c', name='电容2', symbol='o', symbolBrush='r')
         # 窗口.nextRow()
         # 3
 
@@ -104,9 +126,10 @@ if __name__ == '__main__':
     def 定时更新f():
         with 线程锁1:
             热浴侧曲线.setData(时间表, 温度表)
-            高温侧曲线.setData(高低时间表, 高侧表)
-            低温侧曲线.setData(高低时间表, 低侧表)
-            结果曲线.setData(电压时间表, 温差表)
+            X曲线.setData(XY时间表, X表)
+            Y曲线.setData(XY时间表, Y表)
+            结果曲线.setData(温度1表, C1表)
+            结果曲线2.setData(温度2表, C2表)
 
 
     print("准备链接更新函数...")
@@ -118,6 +141,7 @@ if __name__ == '__main__':
     Thread(target=热浴作图).start()
     pg.mkQApp().exec_()
 
-    温升文件.close()
+    过程文件.close()
+    结果文件.close()
     # 热浴稳定(1, 热浴)
     print('終わり')
