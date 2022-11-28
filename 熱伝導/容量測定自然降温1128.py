@@ -1,26 +1,14 @@
-import os
-import sys
 import time
 from threading import Thread, Lock
-
-import numpy as np
 import pyqtgraph as pg
 
 from 源.駆動 import Ls350, K2182, K6220, K195, GPIB锁
-from 源.源 import 日志, 热浴稳定, 温度计转换, 塞贝克系数
-
-初始温度 = 40
-終了温度 = 1
-平均回数 = 3
-降温間隔 = 2  # 昇温では負,40Ｋ以下では絶対温度に比例して小さくなる
-初始电流 = 5 * 10 ** -5  # 开始电流
-期望温差 = 0.5  # 加熱による温度差、低温では小さくなる
-初始点数 = 200
+from 源.源 import 热浴稳定, 温度计转换, 塞贝克系数
 
 初始时间 = time.time()
-数据表 = [时间表, 温度表, 高低时间表, 高侧表, 低侧表, 结果温度, 结果热导, 温差表, 电压时间表] = [[] for _ in range(9)]
+数据表 = [时间表, 温度表, 高低时间表, 高侧表, 高侧表2, 低侧表, 低侧表2, 结果温度, 结果热导, 温差表, 温差表2, 电压时间表] = [[] for _ in range(12)]
 线程锁1 = Lock()
-ファイル名 = 'bt錯体3t'
+ファイル名 = 'テスト3'
 Ls350_1 = Ls350(GPIB号=19)
 热浴 = ['B', '热浴', '热浴逆', 2]  # 通道，校正曲线，逆曲线，输出通道
 低 = ['D', '热导左1T']
@@ -40,41 +28,49 @@ def 热浴作图():
 
 
 def 测定():
-    温升文件 = open(f'结果/噪声{ファイル名}低温{time.strftime("%H時%M分%S秒%Y年%m月%d日", time.localtime())}.txt', mode='a',
-                encoding='utf-8')
-    with GPIB锁:
-        K6220_1.K6.write('CALC3:FORC:STAT ON')
-        K2182_1.K2.write(':sens:volt:auto on')
-    热浴稳定(10, 热浴)
+    K6220_1.K6.write('CALC3:FORC:STAT ON')
+    热浴稳定(180, 热浴)
+    for _ in range(2):
+        with GPIB锁:
+            K6220_1.K6.write('CALC3:FORC:PATT 15')
+            K2182_1.K2.write(':sens:volt:rang:auto on')
+        time.sleep(3)
+        for _ in range(10000):
+            小循环时间 = time.time()
+            温差 = K2182_1.读电压()
+            温差表2.append(温差)
+            温差 = 温差 / 塞贝克系数(12)
+            time.sleep(0.2)
+            with 线程锁1:
+                温差表.append(温差)
+                电压时间表.append(小循环时间 - 初始时间)
 
-    for _ in range(500):
-        小循环时间 = time.time()
-        温差 = K2182_1.读电压() / 塞贝克系数(10)
-        time.sleep(0.2)
-        with 线程锁1:
-            温差表.append(温差)
-            电压时间表.append(小循环时间 - 初始时间)
+        # 小循环初始时间 = time.time()
 
-    # 小循环初始时间 = time.time()
+        with GPIB锁:
+            K2182_1.K2.write(':sens:volt:rang 100')
+            K6220_1.K6.write('CALC3:FORC:PATT 0')
+        time.sleep(3)
+        for _ in range(10000):
+            小循环时间 = time.time()
+            低温侧 = Ls350_1.读电阻(通道=低[0])
+            低侧表2.append(低温侧)
+            # 低温侧 = 温度计转换(低温侧, 低[1])
+            高温侧 = Ls350_1.读电阻(通道=高[0])
+            高侧表2.append(高温侧)
+            # 高温侧 = 温度计转换(高温侧, 高[1])
+            with 线程锁1:
+                高侧表.append(高温侧)
+                低侧表.append(低温侧)
+                高低时间表.append(小循环时间 - 初始时间)
 
-    with GPIB锁:
-        K2182_1.K2.write(':sens:volt:rang:100')
-        K6220_1.K6.write('CALC3:FORC:PATT 0')
-
-    for _ in range(500):
-        小循环时间 = time.time()
-        低温侧 = 温度计转换(Ls350_1.读电阻(通道=低[0]), 低[1])
-        高温侧 = 温度计转换(Ls350_1.读电阻(通道=高[0]), 高[1])
-        with 线程锁1:
-            高侧表.append(高温侧)
-            低侧表.append(低温侧)
-            高低时间表.append(小循环时间 - 初始时间)
-    温升文件.write(str([电压时间表, 温差表, 高低时间表, 高侧表, 低侧表]))
-    温升文件.flush()
-    热浴稳定(1, 热浴)
+            温升文件.write(str([电压时间表, 温差表, 温差表2, 高低时间表, 高侧表, 高侧表2, 低侧表, 低侧表2]))
+            温升文件.flush()
 
 
 if __name__ == '__main__':
+    温升文件 = open(f'结果/噪声{ファイル名}低温{time.strftime("%H時%M分%S秒%Y年%m月%d日", time.localtime())}.txt', mode='a',
+                encoding='utf-8')
     # pg全局1级
     pg.setConfigOption('foreground', 'k')  # 默认文本、线条、轴black
     pg.setConfigOption('background', 'w')  # 默认白背景
@@ -121,3 +117,7 @@ if __name__ == '__main__':
     Thread(target=测定).start()
     Thread(target=热浴作图).start()
     pg.mkQApp().exec_()
+
+    温升文件.close()
+    # 热浴稳定(1, 热浴)
+    print('終わり')
