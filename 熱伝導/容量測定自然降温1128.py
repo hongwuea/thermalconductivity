@@ -7,6 +7,7 @@ import numpy as np
 from 源.駆動 import Ls350, K6220, SR850, GPIB锁
 from 源.源 import 温度计转换
 
+励起电压 = 1e-3
 初始时间 = time.time()
 数据表 = [时间表, 温度表, XY时间表, X表, Y表] = [[] for _ in range(5)]
 数据表2 = [C1表, 温度1表, C2表, 温度2表] = [[] for _ in range(4)]
@@ -19,7 +20,7 @@ Ls350_1 = Ls350(GPIB号=19)
 # K2182_1 = K2182(GPIB号=17)
 K6220_1 = K6220(GPIB号=13)
 # K199_1 = K195(GPIB号=26)
-SR850_1 = SR850(GPIB号=6)
+SR850_1 = SR850(GPIB号=8)
 
 
 def 热浴作图():
@@ -36,7 +37,7 @@ def 测定():
     while 1:
         with GPIB锁:
             K6220_1.K6.write('CALC3:FORC:PATT 15')
-        time.sleep(5)
+        time.sleep(10)
         for _ in range(100):
             小循环时间 = time.time()
             X = SR850_1.读取('X')
@@ -48,7 +49,7 @@ def 测定():
                 Y表.append(Y)
                 XY时间表.append(小循环时间 - 初始时间)
         温度 = np.mean(温度表[-15::])
-        电容 = 1 / (2 * np.pi * 1000 * 1E-3 * (1 / complex(float(np.mean(X表)), float(np.mean(Y表)))).imag)
+        电容 = -1 / (2 * np.pi * 1000 * 1E-3 * (1 / complex(float(np.mean(X表)), float(np.mean(Y表)))).imag)
         with 线程锁1:
             C1表.append(电容)
             温度1表.append(温度)
@@ -59,7 +60,7 @@ def 测定():
 
         with GPIB锁:
             K6220_1.K6.write('CALC3:FORC:PATT 0')
-        time.sleep(5)
+        time.sleep(10)
         for _ in range(100):
             小循环时间 = time.time()
             X = SR850_1.读取('X')
@@ -71,7 +72,7 @@ def 测定():
                 Y表.append(Y)
                 XY时间表.append(小循环时间 - 初始时间)
         温度 = np.mean(温度表[-15::])
-        电容 = 1 / (2 * np.pi * 1000 * 1E-3 * (1 / complex(float(np.mean(X表)), float(np.mean(Y表)))).imag)
+        电容 = - 1 / (2 * np.pi * 1000 * 励起电压 * (1 / complex(float(np.mean(X表)), float(np.mean(Y表)))).imag)
         with 线程锁1:
             C2表.append(电容)
             温度2表.append(温度)
@@ -90,7 +91,7 @@ if __name__ == '__main__':
                 encoding='utf-8')
     结果文件 = open(f'容量測定/結果{ファイル名}{time.strftime("%H時%M分%S秒%Y年%m月%d日", time.localtime())}.txt', mode='a',
                 encoding='utf-8')
-
+    结果文件.write('{温度1表[-1]}\t{C1表[-1]}\t{温度2表[-1]}\t{C2表[-1]}\n')
     # pg全局1级
     pg.setConfigOption('foreground', 'k')  # 默认文本、线条、轴black
     pg.setConfigOption('background', 'w')  # 默认白背景
@@ -105,12 +106,12 @@ if __name__ == '__main__':
             热浴侧曲线 = 左图.plot(时间表, 温度表, pen='g', name='热浴', symbol='o', symbolBrush='b')
 
         右图 = 窗口.addPlot(title="原始数据")
-        右图.setLabel(axis='left', text='电压/V')
+        右图.setLabel(axis='left', text='电流/A')
         右图.setLabel(axis='bottom', text='时间/s', )
         右图.addLegend()
         if 1:  # 窗口内曲线4级
-            X曲线 = 右图.plot(XY时间表, X表, pen='b', name='电压', symbol='o', symbolBrush='b')
-            Y曲线 = 右图.plot(XY时间表, Y表, pen='b', name='电压', symbol='o', symbolBrush='r')
+            X曲线 = 右图.plot(XY时间表, X表, pen='b', name='电流X', symbol='o', symbolBrush='b')
+            Y曲线 = 右图.plot(XY时间表, Y表, pen='b', name='电流Y', symbol='o', symbolBrush='r')
 
         结果图 = 窗口.addPlot(title="结果")
         结果图.setLabel(axis='left', text='电容/F')
