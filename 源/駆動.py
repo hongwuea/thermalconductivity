@@ -152,6 +152,15 @@ class K2400:
             return self.K2.query(":READ?")
 
 
+class K182:
+    def __init__(self, GPIB号):
+        self.K2 = 管理器.open_resource(f'GPIB0::{GPIB号}::INSTR')
+
+    def 读电压(self):
+        with GPIB锁:
+            return float(self.K2.query("V").split("NDCV")[1])
+
+
 class K195:
     def __init__(self, GPIB号):
         self.K2 = 管理器.open_resource(f'GPIB0::{GPIB号}::INSTR')
@@ -171,6 +180,24 @@ class K6220:
             if 电流:
                 self.K6.write(':CURR:RANG %E' % 电流)
             self.K6.write(":CURR %E" % 电流)
+
+
+class K220:
+    def __init__(self, GPIB号):
+        self.K6 = 管理器.open_resource(f'GPIB0::{GPIB号}::INSTR')
+
+    def 设电流(self, 电流):
+        with GPIB锁:
+            self.K6.write("I%EX" % 电流)
+
+
+class Y7651:
+    def __init__(self, GPIB号):
+        self.K6 = 管理器.open_resource(f'GPIB0::{GPIB号}::INSTR')
+
+    def 设电流(self, 电流):  # 数字を変えるだけ、予めレンジとoutputと機能を選んでね。詳しくは説明書を
+        with GPIB锁:
+            self.K6.write(f"S{电流}E")
 
 
 class SR850:
