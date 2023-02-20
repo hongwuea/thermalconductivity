@@ -1,6 +1,5 @@
 import pyqtgraph as pg
-from 源.駆動 import K195
-import time
+
 
 初始时间 = time.time()
 时间表, 电压表 = [], []
