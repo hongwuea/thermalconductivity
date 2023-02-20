@@ -7,7 +7,7 @@ from threading import Thread, Lock
 import pyqtgraph as pg
 
 from 源.源 import 日志
-from 源.駆動 import K2182, Ls370, K195
+from 源.駆動 import  Ls370, K195
 
 数据表 = [时间表, 高侧表, 低侧表, 磁场表] = [[] for _ in range(4)]
 
@@ -15,8 +15,8 @@ from 源.駆動 import K2182, Ls370, K195
 # Ls350_1 = Ls350(GPIB号=19)
 Ls370_1 = Ls370(GPIB号=12)
 # Ls370_2 = Ls370(GPIB号=11)
-K2182_1 = K2182(GPIB号=17)
-# K195_1 = K195(GPIB号=16)
+# K2182_1 = K2182(GPIB号=17)
+K195_1 = K195(GPIB号=26)
 
 
 def 测定():
@@ -33,7 +33,7 @@ def 测定():
         样品 = Ls370_1.读电阻()
         time.sleep(0.1)
         参考 = 样品
-        磁场 = K2182_1.读电压()
+        磁场 = K195_1.读电压()
         表_ = [time.time() - 初始时间, 样品, 参考, 磁场]
         print('\t'.join(map(str, 表_)))
         with 线程锁1:

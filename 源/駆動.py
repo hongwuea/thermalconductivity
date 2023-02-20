@@ -214,3 +214,8 @@ class SR850:
     def 读取(self, 通道):
         with GPIB锁:
             return float(self.SR8.query(f"OUTP?{self.字典[通道]}"))
+
+    def 设频率(self, 频率):
+        with GPIB锁:
+            self.SR8.write(f"FREQ {频率}")
+

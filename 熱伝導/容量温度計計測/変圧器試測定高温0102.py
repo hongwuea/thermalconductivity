@@ -1,14 +1,11 @@
-import numpy as np
 import os
 import pyqtgraph as pg
-import sys
 import time
 from threading import Thread, Lock
+import numpy as np
 
-from scipy.optimize import curve_fit
-
-from 源.源 import 日志, 温度计转换
-from 源.駆動 import Ls350, K2182, K6220, SR850
+from 源.源 import 温度计转换
+from 源.駆動 import Ls350, K6220, SR850
 
 初始时间 = time.time()
 数据表 = [时间表, 温度表, 高低时间表, R表, 结果温度, 结果热导] = [[] for _ in range(6)]
@@ -23,14 +20,6 @@ K2182_1.读电压 = SR850_1.读取('R')
 K6220_1 = K6220(GPIB号=13)
 
 
-def 塞贝克系数(塞_温度):  # 温度→V/K
-    a3 = 2.034140227
-    a2 = -1.341522423
-    a1 = 0.432616895
-
-    return 1E-06 * (1E-06 * a3 * 塞_温度 ** 3 + 1E-03 * a2 * 塞_温度 ** 2 + a1 * 塞_温度)
-
-
 def 热浴作图():
     while 1:
         热浴温度 = 温度计转换(Ls350_1.读电阻(通道=热浴[0]), 热浴[1])
@@ -41,19 +30,12 @@ def 热浴作图():
 
 
 def 测定():
-    #     # Ls350_1.扫引控温()
-    #     拟合参数表 = 初始猜测参数
-    #     设定点数, 设定电流 = 初始点数, 初始电流
-    #
-    #     if not os.path.exists(r'日志'):
-    #         os.makedirs(r'日志')
-    #     sys.stdout = 日志(f'日志/变压器试测定熱伝導率{time.strftime("%H時%M分%S秒 %Y年%m月%d日", time.localtime())}.log')
     if not os.path.exists(r'结果'):
         os.makedirs(r'结果')
     过程文件 = open(f'结果/电容过程{time.strftime("%H時%M分%S秒%Y年%m月%d日", time.localtime())}.txt', mode='a', encoding='utf-8')
     过程文件.write('时间秒\tX\tY\n')
-    # 平均文件 = open(f'结果/电容平均{time.strftime("%H時%M分%S秒%Y年%m月%d日", time.localtime())}.txt', mode='a', encoding='utf-8')
-    # 平均文件.write('温度K\tX1\tX2\tY1\tY2\n')
+    平均文件 = open(f'结果/电容平均{time.strftime("%H時%M分%S秒%Y年%m月%d日", time.localtime())}.txt', mode='a', encoding='utf-8')
+    平均文件.write('温度K\tX1\tX2\tY1\tY2\n')
     print("\n创建文件成功\n")
     time.sleep(3)
     while 1:
@@ -63,10 +45,10 @@ def 测定():
             小循环时间 = time.time()
             X = SR850_1.读取('X')
             X表.append(X)
-            time.sleep(0.2)
+            time.sleep(0.5)
             Y = SR850_1.读取('Y')
             Y表.append(Y)
-            time.sleep(0.2)
+            time.sleep(0.5)
             with 线程锁1:
                 R表.append((X ** 2 + Y ** 2) ** 0.5)
                 高低时间表.append(小循环时间 - 初始时间)
@@ -76,15 +58,19 @@ def 测定():
             小循环时间 = time.time()
             X = SR850_1.读取('X')
             X表.append(X)
-            time.sleep(0.2)
+            time.sleep(0.5)
             Y = SR850_1.读取('Y')
             Y表.append(Y)
-            time.sleep(0.2)
+            time.sleep(0.5)
             with 线程锁1:
                 R表.append((X ** 2 + Y ** 2) ** 0.5)
                 高低时间表.append(小循环时间 - 初始时间)
-        for i in range(200):
-            过程文件.write(f'{高低时间表[-(200 - i)]}\t{X表[i]}\t{Y表[i]}\n')
+        for i in range(400):
+            过程文件.write(f'{高低时间表[-(400 - i)]}\t{X表[i]}\t{Y表[i]}\n')
+        过程文件.flush()
+        平均文件.write(f'{np.mean(温度表[-10::])}\t{np.mean(X表[180:199:1])}\t{np.mean(X表[380:399:1])}'
+                   f'\t{np.mean(Y表[180:199:1])}\t{np.mean(Y表[380:399:1])}\n')
+        平均文件.flush()
 
 
 if __name__ == '__main__':
@@ -131,4 +117,5 @@ if __name__ == '__main__':
     Thread(target=测定).start()
     Thread(target=热浴作图).start()
     pg.mkQApp().exec_()
+
     # ここで全データ保存機能追加？

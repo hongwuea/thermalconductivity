@@ -12,14 +12,12 @@ from 源.駆動 import Ls350, K6220, SR850
 
 线程锁1 = Lock()
 Ls350_1 = Ls350(GPIB号=19)
-初始温度 = 8
+初始温度 = 6
 終了温度 = 40
 降温間隔 = -2  # 昇温では負,40Ｋ以下では絶対温度に比例して小さくなる
 热浴 = ['B', '热浴', '热浴逆', 2]
 
 SR850_1 = SR850(GPIB号=8)
-K2182_1 = SR850_1
-K2182_1.读电压 = SR850_1.读取('R')
 K6220_1 = K6220(GPIB号=13)
 
 
@@ -44,15 +42,15 @@ def 测定():
     Ls350_1.设加热量程(量程=4)
     设定温度 = 初始温度
 
-    def 读取循环(次数):
+    def 读取循环(次数, 等待时间=0.5):
         for _ in range(次数):
             小循环时间 = time.time()
             X = SR850_1.读取('X')
             X表.append(X)
-            time.sleep(0.5)
+            time.sleep(等待时间)
             Y = SR850_1.读取('Y')
             Y表.append(Y)
-            time.sleep(0.5)
+            time.sleep(等待时间)
             with 线程锁1:
                 R表.append((X ** 2 + Y ** 2) ** 0.5)
                 高低时间表.append(小循环时间 - 初始时间)
@@ -63,9 +61,10 @@ def 测定():
         X表, Y表 = [], []
         for _ in range(3):
             K6220_1.设电流(0)
-            读取循环(200)
-            K6220_1.设电流(1E-4)
-            读取循环(200)
+            读取循环(200, 设定温度/100+0.1)
+            K6220_1.设电流(0.5E-4)
+            读取循环(200, 设定温度/100+0.1)
+            K6220_1.设电流(0)
             for i in range(400):
                 过程文件.write(f'{高低时间表[-(400 - i)]}\t{X表[i]}\t{Y表[i]}\n')
             过程文件.flush()
@@ -94,15 +93,6 @@ if __name__ == '__main__':
         if 1:  # 窗口内曲线4级
             高侧曲线 = 右图.plot(高低时间表, R表, pen='b', name='高', symbol='o', symbolBrush='b')
 
-        # 结果图 = 窗口.addPlot(title="热导-温度")
-        # 结果图.setLabel(axis='left', text='热导/WK^-1')
-        # 结果图.setLabel(axis='bottom', text='温度/K', )
-        # if 1:  # 窗口内曲线4级
-        #     结果曲线 = 结果图.plot(结果温度, 结果热导, pen='c', name='热导', symbol='o', symbolBrush='c')
-        # # 窗口.nextRow()
-        # # 3
-
-
     def 定时更新f():
         with 线程锁1:
             热浴侧曲线.setData(时间表, 温度表)
@@ -119,7 +109,7 @@ if __name__ == '__main__':
     Thread(target=热浴作图).start()
     pg.mkQApp().exec_()
 
-    结束文件 = open(f'电容结束{time.strftime("%H時%M分%S秒%Y年%m月%d日", time.localtime())}.txt', mode='a', encoding='utf-8')
+    结束文件 = open(f'结果/电容结束{time.strftime("%H時%M分%S秒%Y年%m月%d日", time.localtime())}.txt', mode='a', encoding='utf-8')
     结束文件.write('时间表\t温度表\t高低时间表\tR表\n')
     结束文件.write(str({'时间表': 时间表, '温度表': 温度表, '高低时间表': 高低时间表, 'R表': R表}))
     结束文件.flush()
