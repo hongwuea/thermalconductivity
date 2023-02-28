@@ -219,3 +219,8 @@ class SR850:
         with GPIB锁:
             self.SR8.write(f"FREQ {频率}")
 
+
+# if __name__ == '__main__':
+    # print(管理器.list_resources())
+    計測器 = 管理器.open_resource(f'GPIB0::13::INSTR')
+    print(計測器.query("*IDN?"))
