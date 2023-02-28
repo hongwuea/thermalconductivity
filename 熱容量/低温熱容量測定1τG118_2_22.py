@@ -117,12 +117,13 @@ def 計測():
             else:
                 [τ, t0], 誤差行列 = 当てはめてみる
 
+
             with スレッドロック1:  # 結果更新保存
                 当てはめ時間表.extend(緩和曲線[0])
                 当てはめ曲線.extend(ΔT * np.exp(-(np.array(緩和曲線[0]) - 時間_0 + t0) / τ) + T_0)
+                時間ずれ表.append(t0)
                 結果温度表.append(np.mean(熱浴温度表[-10:]))
                 熱容量表.append(τ * κ)
-                時間ずれ表.append(t0)
 
             print(f'τ={τ}s,t0={t0}s')
             過程ファイル.write(str([np.mean(熱浴時間表[-10:]), np.mean(熱浴温度表[-10:]), τ, ΔT, κ, T_0, 緩和曲線, ]) + '\n')
@@ -167,6 +168,7 @@ def 定時更新f():
 热浴作图線 = Thread(target=热浴作图, daemon=True)
 計測線.start()
 热浴作图線.start()
+
 タイマー = pg.QtCore.QTimer()
 タイマー.timeout.connect(定時更新f)
 タイマー.start(3000)

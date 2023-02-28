@@ -1,10 +1,10 @@
 import os
-import sys
 import time
 from threading import Thread, Lock
 from scipy.optimize import curve_fit
 import pyqtgraph as pg
 import numpy as np
+
 from 源.駆動 import K2182, K6220, Ls350
 from 源.源 import 温度计转换, 塞贝克系数
 
@@ -66,7 +66,7 @@ def 計測():
             else:
                 print(f'傾き={傾き}>{昇温安定判断}、昇温安定判断失败')
         ΔT1 = np.mean(温度差表[-10:]) - T_01
-        κ1 = 電流 ** 2 * 1e4 / ΔT1
+        κ1 = 電流 ** 2 * 1e3 / ΔT1
         return ΔT1, κ1, T_01
 
     while 1:  # 1循環当たり1回の加熱ー緩和、温度をLs340から読み取るだけ、制御はしない
@@ -154,4 +154,4 @@ if not os.path.exists(r'結果'):
 曲線ファイル.close()
 過程ファイル.close()
 print("終了")
-sys.exit()
+# sys.exit()

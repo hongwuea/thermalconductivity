@@ -6,7 +6,7 @@ import pyqtgraph as pg
 import numpy as np
 
 from 源.駆動 import K195, K6220, Ls350, K2182
-from 源.源 import 温度计转换, 热浴稳定
+from 源.源 import 温度计转换, 热浴稳定, 塞贝克系数
 
 # ----------全局変数初期値----------
 初期τ = 10
@@ -56,7 +56,9 @@ def 計測():
     def 温度読み取り(回数):
         小温度表, 小時間表 = [], []
         for _ in range(int(回数)):
-            温度1 = 温度计转换(Ls370_1.读电阻(), 温度計[1])
+            # 温度1 = 温度计转换(Ls370_1.读电阻(), 温度計[1])
+            電圧1 = K2182_1.读电压()
+            温度1 = 電圧1 / 塞贝克系数(np.mean(熱浴温度表[-10:]))
             時間1 = time.time() - 初期時間
             小温度表.append(温度1)
             小時間表.append(時間1)
@@ -128,6 +130,11 @@ def 計測():
             print(f'τ={τ}s,t0={t0}s')
             過程ファイル.write(str([np.mean(熱浴時間表[-10:]), np.mean(熱浴温度表[-10:]), τ, ΔT, κ, T_0, 緩和曲線, ]) + '\n')
             過程ファイル.flush()
+            with スレッドロック1:
+                試料温度曲線.setData(時間表, 温度差表)
+                熱容量結果.setData(結果温度表, 熱容量表)
+                熱浴温度曲線.setData(熱浴時間表, 熱浴温度表)
+                当てはめ.setData(当てはめ時間表, 当てはめ曲線)
 
         设定温度 = 设定温度 - 降温間隔 * min(1, 设定温度 / 40)
 
@@ -156,22 +163,41 @@ if 1:  # 窗口内曲线4级
 if 1:  # 窗口内曲线4级
     熱容量結果 = 右図.plot(結果温度表, 熱容量表, pen='g', name='　', symbol='o', symbolBrush='r')
 
+ウィンドウ2 = pg.GraphicsLayoutWidget(show=True, title="熱容量測定realtime")
+
+図1 = ウィンドウ2.addPlot(title="時間-温度")
+図1.setLabel(axis='left', text='温度/K')
+図1.setLabel(axis='bottom', text='時間/s', )
+if 1:  # 窗口内曲线4级
+    熱浴温度曲線2 = 図1.plot(熱浴時間表, 熱浴温度表, pen='g', name='　', symbol='o', symbolBrush='b')
+
+図2 = ウィンドウ2.addPlot(title="時間-温度")
+図2.setLabel(axis='left', text='温度/K')
+図2.setLabel(axis='bottom', text='時間/s', )
+if 1:  # 窗口内曲线4级
+    試料温度曲線2 = 図2.plot(時間表, 温度差表, pen='g', name='　', symbol='o', symbolBrush='b')
+    当てはめ2 = 図2.plot(当てはめ時間表, 当てはめ曲線)
+
 
 def 定時更新f():
-    with スレッドロック1:
-        試料温度曲線.setData(時間表, 温度差表)
-        熱容量結果.setData(結果温度表, 熱容量表)
-        熱浴温度曲線.setData(熱浴時間表, 熱浴温度表)
-        当てはめ.setData(当てはめ時間表, 当てはめ曲線)
+    while 1:
+        time.sleep(3)
+        with スレッドロック1:
+            最大点数 = min(1000, len(熱浴時間表))
+            熱浴温度曲線2.setData(熱浴時間表[-最大点数::], 熱浴温度表[-最大点数::])
+            試料温度曲線2.setData(熱浴時間表[-最大点数::], 熱浴温度表[-最大点数::])
+            当てはめ2.setData(当てはめ時間表[-最大点数::], 当てはめ曲線[-最大点数::])
 
 
 計測線 = Thread(target=計測, daemon=True)
 热浴作图線 = Thread(target=热浴作图, daemon=True)
+曲線更新 = Thread(target=定時更新f, daemon=True)
 計測線.start()
 热浴作图線.start()
-タイマー = pg.QtCore.QTimer()
-タイマー.timeout.connect(定時更新f)
-タイマー.start(3000)
+曲線更新.start()
+# タイマー = pg.QtCore.QTimer()
+# タイマー.timeout.connect(定時更新f)
+# タイマー.start(3000)
 
 if not os.path.exists(r'過程'):
     os.makedirs(r'過程')
@@ -179,8 +205,8 @@ if not os.path.exists(r'過程'):
 過程ファイル.write('str([np.mean(熱浴時間表[-10:]), np.mean(熱浴温度表[-10:]), τ, ΔT, κ, T_0, 緩和曲線, ]) \n')
 
 pg.mkQApp().exec_()  # メインスレッド実行
-
 print("終了")
+
 過程ファイル.flush()
 過程ファイル.close()
 
