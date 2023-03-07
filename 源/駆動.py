@@ -59,9 +59,9 @@ class Ls350:
     def 扫引控温(self, 目标温度=250, 扫引速度K每min=0.1, 加热=0):
         time.sleep(0.1)
         with GPIB锁:
-            # 当前温度 = float(self.Ls3.query(f"KRDG? B"))
-            # self.Ls3.write(f'RAMP 1,0,{扫引速度K每min}')
-            # self.Ls3.write(f'SETP 1,{当前温度}')
+            当前温度 = float(self.Ls3.query(f"KRDG? B"))
+            self.Ls3.write(f'RAMP 1,0,{扫引速度K每min}')
+            self.Ls3.write(f'SETP 1,{当前温度}')
             self.Ls3.write(f'RANGE {加热}')
             self.Ls3.write(f'RAMP 2,1,{扫引速度K每min}')
             self.Ls3.write(f'SETP 2,{目标温度}')
@@ -219,7 +219,7 @@ class SR850:
         with GPIB锁:
             self.SR8.write(f"FREQ {频率}")
 
-# if __name__ == '__main__':
-    # print(管理器.list_resources())
+if __name__ == '__main__':
+    print(管理器.list_resources())
     計測器 = 管理器.open_resource(f'GPIB0::13::INSTR')
     print(計測器.query("*IDN?"))

@@ -195,11 +195,12 @@ def 定時更新f():
         試料温度曲線2.setData(時間表[-num::], 温度差表[-num::])
         当てはめ2.setData(当てはめ時間表[-num::], 当てはめ曲線[-num::])
     if 図更新標識.is_set():
-        試料温度曲線.setData(時間表, 温度差表)
-        熱容量結果.setData(結果温度表, 熱容量表)
-        熱浴温度曲線.setData(熱浴時間表, 熱浴温度表)
-        当てはめ.setData(当てはめ時間表, 当てはめ曲線)
-    図更新標識.clear()
+        with スレッドロック1:
+            試料温度曲線.setData(時間表, 温度差表)
+            熱容量結果.setData(結果温度表, 熱容量表)
+            熱浴温度曲線.setData(熱浴時間表, 熱浴温度表)
+            当てはめ.setData(当てはめ時間表, 当てはめ曲線)
+        図更新標識.clear()
 
 
 計測線 = Thread(target=計測, daemon=True, name='計測線')
