@@ -1,2 +1,2 @@
 from 源.源 import 日志
-print(1234)
+print(12345)
