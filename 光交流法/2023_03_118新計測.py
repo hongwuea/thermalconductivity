@@ -96,7 +96,7 @@ if __name__ == '__main__':
     pg.setConfigOption('foreground', 'k')  # 默认文本、线条、轴black
     pg.setConfigOption('background', 'w')  # 默认白背景
     # 窗口2级
-    窗口 = pg.GraphicsLayoutWidget(show=True, title="位相検波光交流法熱容量測定")
+    窗口 = pg.GraphicsLayoutWidget(show=True, title=f"位相検波光交流法熱容量測定_{測定名}_{測定条件名}")
     窗口.resize(800, 500)
     if 1:  # 窗口内图3级
         # 左图 = 窗口.addPlot(title="同相曲线")
