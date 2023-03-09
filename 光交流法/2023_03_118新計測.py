@@ -10,16 +10,16 @@ import pyqtgraph as pg
 from 源.駆動 import Ls350, K2182, K6220
 from 源.源 import 日志
 
-測定名 = 'G118_2023_03'
+測定名 = 'G118_2023_03_昇温0.1K'
 光源電流 = 5E-3  # 電流/A
-周波数 = 0.1  # 周波数/Hz
+周波数 = 0.05  # 周波数/Hz
 
 スレッドロック1 = Lock()
 Ls350_1 = Ls350(GPIB号=19)
 K2182_1 = K2182(GPIB号=17)
 K6220_1 = K6220(GPIB号=13)
 # Ls350加熱出力番号 = 2
-
+# Ls350_1.扫引控温(目标温度=160, 扫引速度K每min=0.1, 加热=5)      # 目標温度、変化速度、ヒーターのレンジを驱动.pyに入力
 測定条件名 = f'{周波数}Hz_{光源電流*1e3}mA'
 開始 = time.time()
 X表, Y表, R表 = [], [], []
@@ -29,20 +29,22 @@ X表, Y表, R表 = [], [], []
 def 測定():
     初期 = time.time()
     电流 = 光源電流
-    # Ls350_1.扫引控温(目标温度=160, 扫引速度K每min=0.2, 加热=3)  # 目標温度、変化速度、ヒーターのレンジを驱动.pyに入力
-    # Ls340_2.扫引控温(目标温度=200,扫引速度K每min=1, 加热=5)
     K2182_1.触发切换('OFF')
     電圧表, 位相表 = [], []
 
-    if not os.path.exists(f'結果_{測定名}'):
-        os.makedirs(f'結果_{測定名}')
-    結果 = open(f'結果_{測定名}/{time.strftime("%Y年%m月%d日%H時%M分%S秒", time.localtime())}_{測定条件名}.txt', mode='a',
+    if not os.path.exists(f'結果'):
+        os.makedirs(f'結果')
+    結果 = open(f'結果/{測定名}_{測定条件名}_{time.strftime("%Y年%m月%d日%H時%M分%S秒", time.localtime())}_.txt', mode='a',
               encoding='utf-8')
     結果.write('時間秒\t温度\tX表\tY表\n')
-    if not os.path.exists(f'日誌_{測定名}'):
-        os.makedirs(f'日誌_{測定名}')
-    sys.stdout = 日志(f'日誌_{測定名}/光交流法測定日誌{time.strftime("%Y年%m月%d日%H時%M分%S秒", time.localtime())}_{測定条件名}.log')
+    if not os.path.exists(f'日誌'):
+        os.makedirs(f'日誌')
+    sys.stdout = 日志(f'日誌/{測定名}_{測定条件名}_{time.strftime("%Y年%m月%d日%H時%M分%S秒", time.localtime())}.log')
+
     標本数 = 2/周波数
+    print('予熱中.....')
+    K6220_1.设电流(电流/2)
+    time.sleep(20)
     while 1:
         時間1 = time.time()
         # if 时间1 - 開始 >= 36000:
@@ -68,12 +70,12 @@ def 測定():
 
         for i in range(int(標本数/2)-1):
             try:
-                time.sleep(0.5 * (i + 11) - (time.time() - 時間1))
+                time.sleep(0.5 * (i + 標本数/2+1) - (time.time() - 時間1))
             except:
                 traceback.print_exc()
             else:
                 電圧表.append(K2182_1.触发读电压())
-                位相表.append(i + 11)
+                位相表.append(i + 標本数/2+1)
         with スレッドロック1:
             X表.append(sum(np.sin(2 * np.pi * np.array(位相表) / 標本数) * np.array(電圧表)) / (標本数-2))
             Y表.append(-sum(np.cos(2 * np.pi * np.array(位相表) / 標本数) * np.array(電圧表)) / (標本数-2))

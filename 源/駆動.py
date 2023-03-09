@@ -60,9 +60,9 @@ class Ls350:
         time.sleep(0.1)
         with GPIB锁:
             当前温度 = float(self.Ls3.query(f"KRDG? B"))
-            self.Ls3.write(f'RAMP 1,0,{扫引速度K每min}')
-            self.Ls3.write(f'SETP 1,{当前温度}')
-            self.Ls3.write(f'RANGE {加热}')
+            self.Ls3.write(f'RAMP 2,0,0.1')
+            self.Ls3.write(f'SETP 2,{当前温度:.5}')
+            self.Ls3.write(f'RANGE 2,{int(加热)}')
             self.Ls3.write(f'RAMP 2,1,{扫引速度K每min}')
             self.Ls3.write(f'SETP 2,{目标温度}')
 
