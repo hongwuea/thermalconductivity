@@ -27,7 +27,7 @@ class Ls350:
             return float(self.Ls3.query(f"SRDG?{通道}"))
 
     def 读温度(self, 通道='B'):
-        time.sleep(0.1)
+        # time.sleep(0.1)
         with GPIB锁:
             return float(self.Ls3.query(f"KRDG?{通道}"))
 
@@ -57,13 +57,18 @@ class Ls350:
             self.Ls3.write(f"PID,{通道},{P},{I},{D}")
 
     def 扫引控温(self, 目标温度=250, 扫引速度K每min=0.1, 加热=0):
-        time.sleep(0.1)
         with GPIB锁:
+            time.sleep(0.1)
             当前温度 = float(self.Ls3.query(f"KRDG? B"))
+            time.sleep(0.1)
             self.Ls3.write(f'RAMP 2,0,0.1')
+            time.sleep(0.1)
             self.Ls3.write(f'SETP 2,{当前温度:.5}')
+            time.sleep(0.1)
             self.Ls3.write(f'RANGE 2,{int(加热)}')
+            time.sleep(0.1)
             self.Ls3.write(f'RAMP 2,1,{扫引速度K每min}')
+            time.sleep(0.1)
             self.Ls3.write(f'SETP 2,{目标温度}')
 
 
