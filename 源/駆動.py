@@ -157,6 +157,15 @@ class K2400:
             return self.K2.query(":READ?")
 
 
+class K2001:
+    def __init__(self, GPIB号):
+        self.K2 = 管理器.open_resource(f'GPIB0::{GPIB号}::INSTR')
+
+    def 读数据(self):
+        with GPIB锁:
+            return float(self.K2.query("FETCh?").split("N")[0])
+
+
 class K182:
     def __init__(self, GPIB号):
         self.K2 = 管理器.open_resource(f'GPIB0::{GPIB号}::INSTR')
