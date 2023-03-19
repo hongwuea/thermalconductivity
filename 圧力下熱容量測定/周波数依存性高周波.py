@@ -11,10 +11,11 @@ from 源.駆動 import SR850
 測定名 = 'G118圧力_ステップ緩和検証300K_LIA'
 利得 = 1
 光源電流 = 0.5E-3  # 電流/A
-周波数 = 5  # 周波数/Hz
-频率0 = 100
-频率1 = 1
-点数 = 10  # 对数分布
+周波数 = 1  # 周波数/Hz
+
+频率1 = 10
+频率2 = 1000
+点数 = 40  # 对数分布
 平均次数 = 10
 SR850_1 = SR850(GPIB号=8)
 測定条件名 = f'{周波数}Hz_{光源電流 * 1e3}mA'
@@ -41,14 +42,14 @@ SR850_1 = SR850(GPIB号=8)
 
 def 計測():
     for i in range(点数):
-        频率 = 频率0 ** (i / (点数 - 1)) * 频率1 ** (1 - i / (点数 - 1))
+        频率 = 频率2 ** (i / (点数 - 1)) * 频率1 ** (1 - i / (点数 - 1))
         SR850_1.设频率(频率)
         # X表, Y表 = [], []
-        time.sleep(20)
+        time.sleep(10)
         for _ in range(平均次数):
-            X=SR850_1.读取('X')
-            Y=SR850_1.读取('Y')
-            time.sleep(10)
+            X = SR850_1.读取('X')
+            Y = SR850_1.读取('Y')
+            time.sleep(1)
             with スレッドロック1:
                 频率表.append(频率)
                 幅值表.append(np.sqrt(X ** 2 + Y ** 2))
@@ -64,14 +65,14 @@ if __name__ == '__main__':
     窗口.resize(800, 500)
     if 1:  # 窗口内图3级
         右图2 = 窗口.addPlot(title="内部pt100温度計")
-        右图2.setLabel(axis='left', text='周波数/Hz')
-        右图2.setLabel(axis='bottom', text='R値/Volt', )
+        右图2.setLabel(axis='left', text='R値/Volt')
+        右图2.setLabel(axis='bottom', text='周波数/Hz', )
         if 1:  # 窗口内曲线4级
             R = 右图2.plot(频率表, 幅值表, pen='b', name='R表', symbol='o', symbolBrush='b')
     if 1:  # 窗口内图3级
         右图2 = 窗口.addPlot(title="内部pt100温度計")
-        右图2.setLabel(axis='left', text='周波数/Hz')
-        右图2.setLabel(axis='bottom', text='φ値/°', )
+        右图2.setLabel(axis='left', text='φ値/°')
+        右图2.setLabel(axis='bottom', text='周波数/Hz', )
         if 1:  # 窗口内曲线4级
             φ = 右图2.plot(频率表, 角度表, pen='b', name='φ表', symbol='o', symbolBrush='b')
 
