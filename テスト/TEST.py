@@ -1,2 +1,3 @@
-from 源.源 import 日志
-print(12345)
+import numpy as np
+
+print(np.arctan(1)*180/np.pi)
