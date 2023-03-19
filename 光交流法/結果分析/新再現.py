@@ -87,7 +87,7 @@ if 1:  # 窗口内图3级
     时间图3.setLogMode(x=True, y=True)
     时间图3.setLabel(axis='left', text='信号/nV')
     时间图3.setLabel(axis='bottom', text='频率/Hz')
-    if 1:  # 窗口内曲线4级
+    if 1:  # 窗口内曲线4级1
         输入 = R表[500:] * 1e5
         # 输入 =高频R[500:]
         长 = len(输入)
