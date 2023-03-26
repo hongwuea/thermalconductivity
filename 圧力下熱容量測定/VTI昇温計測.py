@@ -8,14 +8,14 @@ import pyqtgraph as pg
 # 同一フォルダに同名モジュールが入る場合にライブラリ導入エラーあり
 from 源.駆動 import SR850, K6220, Ls350
 
-測定名 = 'G118圧力_自然降温計測_LIA'
+測定名 = 'G118圧力_VTI昇温計測_LIA'
 利得 = 1000
 最大電流 = 0.5E-3  # 電流/A
 励起電流 = 0.5E-3
-周波数 = 5  # 周波数/Hz
+周波数 = 10  # 周波数/Hz
 
-点数 = 100  # 对数分布
-平均次数 = 10
+# 点数 = 100  # 对数分布
+# 平均次数 = 10
 K6220_1 = K6220(GPIB号=13)
 SR850_1 = SR850(GPIB号=8)
 Ls350_1 = Ls350(GPIB号=19)
@@ -28,8 +28,8 @@ X表, Y表, 熱容量表 = [], [], []
 
 def 計測():
     while 1:
-        X = SR850_1.读取('X')/利得
-        Y = SR850_1.读取('Y')/利得
+        X = SR850_1.读取('X') / 利得
+        Y = SR850_1.读取('Y') / 利得
 
         P = 最大電流 ** 2 * 1e4
         ω = 2 * np.pi * 周波数
@@ -69,7 +69,6 @@ if __name__ == '__main__':
         if 1:  # 窗口内曲线4级
             熱容量曲線 = 図1.plot(温度表, 熱容量表, pen='g', name='　', symbol='o', symbolBrush='b')
 
-
     # if 1:  # 窗口内图3级
     #     右图2 = 窗口.addPlot(title="内部pt100温度計")
     #     右图2.setLabel(axis='left', text='R値/Volt')
@@ -106,9 +105,9 @@ if __name__ == '__main__':
         os.makedirs(f'結果')
     結果 = open(f'結果/{測定名}_{測定条件名}_{time.strftime("%Y年%m月%d日%H時%M分%S秒", time.localtime())}_.txt', mode='a',
               encoding='utf-8')
-    結果.write('電流表\t幅值表\t角度表\n')
-    [結果.write('\t'.join(map(str, 横行))+'\n') for 横行 in zip([X表, Y表, 熱容量表, 時間表, 温度表])]
+    結果.write('X表\nY表\n熱容量表\n 時間表\n 温度表\n')
     # 結果.write(str([X表, Y表, 熱容量表, 時間表, 温度表]))
+    [結果.write('\t'.join(map(str, 横行)) + '\n') for 横行 in zip([X表, Y表, 熱容量表, 時間表, 温度表])]
     結果.flush()
     結果.close()
     print('完了しました！')
