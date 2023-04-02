@@ -3,14 +3,14 @@
 import os
 import sys
 import time
-from threading import Thread, Lock
+from threading import Lock
 
-import numpy as np
 import pyqtgraph as pg
 
-from 源.駆動 import Ls350
 from 源.源 import 日志, 温度计转换
+from 源.駆動 import Ls350
 
+热浴cernox = ['B', '热浴', '热浴逆', 2]
 初始时间 = time.time()
 数据表 = [时间表, 温度表, 高低时间表, A表, B表, C表, D表] = [[] for _ in range(7)]
 线程锁1 = Lock()
@@ -68,13 +68,14 @@ if __name__ == '__main__':
     # Ls350_1.设加热量程(量程=1)
     if not os.path.exists(r'日志'):
         os.makedirs(r'日志')
-    sys.stdout = 日志(f'日志/校正日志{time.strftime("%H時%M分%S秒 %Y年%m月%d日", time.localtime())}.log')
+    sys.stdout = 日志(f'日志/3個CERNOX校正1mVRESERVE_Ls350{time.strftime("%H時%M分%S秒 %Y年%m月%d日", time.localtime())}.log')
     print("时间秒\t热浴温度\tA侧\tB侧\tC侧\tD侧")
 
 
     def 定时更新f():
         A, B, C, D = map(lambda x: Ls350_1.读电阻(通道=x), ['A', 'B', 'C', 'D'])
-        热浴温度 = 温度计转换(B, '热浴1030br202206he3')
+        # 热浴温度 = 温度计转换(B, '热浴1030br202206he3')
+        热浴温度 = 温度计转换(Ls350_1.读电阻(), 热浴cernox[1])
         print(f"{time.time() - 初始时间}\t{热浴温度}\t{A}\t{B}\t{C}\t{D}")
         list(map(lambda x, y: x.append(y), [时间表, 温度表, A表, B表, C表, D表], [time.time() - 初始时间, 热浴温度, A, B, C, D]))
         热浴.setData(时间表, 温度表)

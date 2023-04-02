@@ -30,14 +30,14 @@ def 計測():
     while 1:
         X = SR850_1.读取('X') / 利得
         Y = SR850_1.读取('Y') / 利得
-
+        # 電圧 = (SR850_1.读取('X') + 1j * SR850_1.读取('Y')
         P = 最大電流 ** 2 * 1e4
         ω = 2 * np.pi * 周波数
         R = np.sqrt(X ** 2 + Y ** 2)
         ΔTrms = 3 * R / 励起電流
         C_p = P / (ω * ΔTrms)
 
-        温度 = Ls350_1.读温度(通道='C')
+        温度 = Ls350_1.读温度(通道='D')
         X表.append(X)
         Y表.append(Y)
         with スレッドロック1:
@@ -105,9 +105,9 @@ if __name__ == '__main__':
         os.makedirs(f'結果')
     結果 = open(f'結果/{測定名}_{測定条件名}_{time.strftime("%Y年%m月%d日%H時%M分%S秒", time.localtime())}_.txt', mode='a',
               encoding='utf-8')
-    結果.write('X表\nY表\n熱容量表\n 時間表\n 温度表\n')
+    結果.write('X表\tY表\t熱容量表\t 時間表\t 温度表\n')
     # 結果.write(str([X表, Y表, 熱容量表, 時間表, 温度表]))
-    [結果.write('\t'.join(map(str, 横行)) + '\n') for 横行 in zip([X表, Y表, 熱容量表, 時間表, 温度表])]
+    [結果.write('\t'.join(map(str, 横行)) + '\n') for 横行 in zip(X表, Y表, 熱容量表, 時間表, 温度表)]
     結果.flush()
     結果.close()
     print('完了しました！')
