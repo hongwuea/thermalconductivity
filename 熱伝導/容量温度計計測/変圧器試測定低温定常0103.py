@@ -110,8 +110,8 @@ if __name__ == '__main__':
     pg.mkQApp().exec_()
 
     结束文件 = open(f'结果/电容结束{time.strftime("%H時%M分%S秒%Y年%m月%d日", time.localtime())}.txt', mode='a', encoding='utf-8')
-    结束文件.write('时间表\t温度表\t高低时间表\tR表\n')
-    结束文件.write(str({'时间表': 时间表, '温度表': 温度表, '高低时间表': 高低时间表, 'R表': R表}))
+    结束文件.write('時間表\t温度表\t高低时间表\tR表\n')
+    结束文件.write(str({'時間表': 时间表, '温度表': 温度表, '高低时间表': 高低时间表, 'R表': R表}))
     结束文件.flush()
 
     print('结束')

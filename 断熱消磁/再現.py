@@ -57,7 +57,7 @@ if __name__ == '__main__':
         # 磁场图.setLabel(axis='left', text='电压/V')
         # 磁场图.setLabel(axis='bottom', text='时间/s', )
         # if 1:  # 窗口内曲线4级
-        #     磁场曲线 = 磁场图.plot(时间表, 磁场表, pen='c', name='磁场', symbol='o', symbolBrush='b')
+        #     磁场曲线 = 磁场图.plot(時間表, 磁场表, pen='c', name='磁场', symbol='o', symbolBrush='b')
         # 窗口.nextRow()
         # 3
 

@@ -87,7 +87,7 @@ def 测定():
         #     A, B, C, D = map(lambda x: Ls350_1.读电阻(通道=x), ['A', 'B', 'C', 'D'])
         #
         #     with 线程锁1:
-        #         list(map(lambda x, y: x.append(y), [时间表, A表, B表, C表, D表], [time.time() - 初始时间, A, B, C, D]))
+        #         list(map(lambda x, y: x.append(y), [時間表, A表, B表, C表, D表], [time.time() - 初始时间, A, B, C, D]))
         # A均, B均, C均, D均 = map(lambda x: np.mean(x[-平均点数::]), [A表, B表, C表, D表])
 
         print(f"{time.time() - 初始时间}\t{设定温度}\t{A均}\t{B均}\t{C均}\t{D均}")
@@ -117,14 +117,14 @@ if __name__ == '__main__':
         # 右图.setLabel(axis='bottom', text='时间/s', )
         # 右图.addLegend()
         # if 1:  # 窗口内曲线4级
-        #     A_, B_, C_, D_ = map(lambda 表, 笔, 名: 右图.plot(时间表, 表, pen=笔, name=名, symbol='o', symbolBrush=笔),
+        #     A_, B_, C_, D_ = map(lambda 表, 笔, 名: 右图.plot(時間表, 表, pen=笔, name=名, symbol='o', symbolBrush=笔),
         #                          [A表, B表, C表, D表], ['b', 'r', 'y', 'g'], ['A', 'B', 'C', 'D'])
 
 
     def 定时更新f():
         with 线程锁1:
             热浴.setData(热浴时间表, 温度表)
-            # list(map(lambda x, y: x.setData(时间表, y), [A_, B_, C_, D_], [A表, B表, C表, D表]))
+            # list(map(lambda x, y: x.setData(時間表, y), [A_, B_, C_, D_], [A表, B表, C表, D表]))
 
 
     print("准备链接更新函数...")

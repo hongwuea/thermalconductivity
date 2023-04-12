@@ -21,7 +21,7 @@ K2182_1 = K2182(GPIB号=17)
 #         热浴温度 = 温度计转换(Ls350_1.读电阻(通道='B'), '热浴1030br202206')
 #         with 线程锁1:
 #             温度表.append(热浴温度)
-#             时间表.append(time.time() - 初始时间)
+#             時間表.append(time.time() - 初始时间)
 #         time.sleep(3)
 
 

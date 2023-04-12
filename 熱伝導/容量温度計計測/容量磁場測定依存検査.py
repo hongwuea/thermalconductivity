@@ -24,7 +24,7 @@ if __name__ == '__main__':
         os.makedirs(r'容量測定')
     结果文件 = open(f'容量測定/結果{ファイル名}{time.strftime("%H時%M分%S秒%Y年%m月%d日", time.localtime())}.txt', mode='a',
                 encoding='utf-8')
-    结果文件.write('时间表\t磁场电压表\t 热浴温度表\t 电容温度表\n')
+    结果文件.write('時間表\t磁场电压表\t 热浴温度表\t 电容温度表\n')
     # pg全局1级
     pg.setConfigOption('foreground', 'k')  # 默认文本、线条、轴black
     pg.setConfigOption('background', 'w')  # 默认白背景

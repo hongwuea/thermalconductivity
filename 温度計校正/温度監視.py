@@ -47,7 +47,7 @@ if __name__ == '__main__':
         # 右图.setLabel(axis='bottom', text='时间/s', )
         # 右图.addLegend()
         # if 1:  # 窗口内曲线4级
-        #     A_, B_, C_, D_ = map(lambda 表, 笔, 名: 右图.plot(时间表, 表, pen=笔, name=名, symbol='o', symbolBrush=笔),
+        #     A_, B_, C_, D_ = map(lambda 表, 笔, 名: 右图.plot(時間表, 表, pen=笔, name=名, symbol='o', symbolBrush=笔),
         #                          [A表, B表, C表, D表], ['b', 'r', 'y', 'g'], ['A', 'B', 'C', 'D'])
         #
 
@@ -55,7 +55,7 @@ if __name__ == '__main__':
     def 定时更新f():
         with 线程锁1:
             热浴.setData(热浴时间表, 温度表)
-            # list(map(lambda x, y: x.setData(时间表, y), [A_, B_, C_, D_], [A表, B表, C表, D表]))
+            # list(map(lambda x, y: x.setData(時間表, y), [A_, B_, C_, D_], [A表, B表, C表, D表]))
 
 
     print("准备链接更新函数...")

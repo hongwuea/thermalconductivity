@@ -68,7 +68,7 @@ if 1:  # 窗口内图3级
     温度图.setLabel(axis='left', text='温度/K')
     温度图.setLabel(axis='bottom', text='時間/s', )
     if 1:  # 窗口内曲线4级
-        # 温度曲线 = 温度图.plot(时间表, 温度表, pen='b', name='温度', symbol='o', symbolBrush='b')
+        # 温度曲线 = 温度图.plot(時間表, 温度表, pen='b', name='温度', symbol='o', symbolBrush='b')
         温度曲线 = 温度图.plot(时间表, 温度表, pen=None, name='R表', symbol='o', symbolBrush='b', symbolSize=10)
     # 窗口.nextRow()
     # 3
@@ -77,7 +77,7 @@ if 1:  # 窗口内图3级
 # def 定时更新f():
 #     同相X.setData(温度表, X表)
 #     正交Y.setData(温度表, Y表)
-#     温度曲线.setData(时间表, 温度表)
+#     温度曲线.setData(時間表, 温度表)
 #
 #
 # print("准备链接更新函数...")

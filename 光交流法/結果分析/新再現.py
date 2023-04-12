@@ -37,7 +37,7 @@ print(abs(fft(R表[500::] * 1e5)) / len(R表[500::]))
 
 
 # Cp表 = 塞贝克系数(温度表) / R表
-# 时间表 = 时间表 - 时间表[0]
+# 時間表 = 時間表 - 時間表[0]
 pg.setConfigOption('foreground', 'k')  # 默认文本、线条、轴black
 pg.setConfigOption('background', 'w')  # 默认白背景
 # 窗口2级
@@ -73,7 +73,7 @@ if 1:  # 窗口内图3级
     # 温度图.setLabel(axis='left', text='温度/K')
     # 温度图.setLabel(axis='bottom', text='時間/s', )
     # if 1:  # 窗口内曲线4级
-    #     温度曲线 = 温度图.plot(时间表, 温度表, pen='b', name='温度', symbol='o', symbolBrush='b')
+    #     温度曲线 = 温度图.plot(時間表, 温度表, pen='b', name='温度', symbol='o', symbolBrush='b')
     # 窗口.nextRow()
     # styles = {'font-size':'30px'}
     窗口2 = pg.GraphicsLayoutWidget(show=True, title="鉴相热容测量结果2")

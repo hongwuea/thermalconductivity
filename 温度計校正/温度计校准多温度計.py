@@ -25,7 +25,7 @@ Ls350加热环路号 = 2
 #         time.sleep(3)
 #         with 线程锁1:
 #             温度表.append(热浴温度)
-#             时间表.append(time.time() - 初始时间)
+#             時間表.append(time.time() - 初始时间)
 
 #
 # def 测定():
@@ -58,10 +58,10 @@ if __name__ == '__main__':
         右图.setLabel(axis='bottom', text='时间/s', )
         右图.addLegend()
         if 1:  # 窗口内曲线4级
-            # A_ = 右图.plot(时间表, A表, pen='b', name='A', symbol='o', symbolBrush='b')
-            # B_ = 右图.plot(时间表, B表, pen='r', name='B', symbol='o', symbolBrush='b')
-            # C_ = 右图.plot(时间表, C表, pen='y', name='C', symbol='o', symbolBrush='b')
-            # D_ = 右图.plot(时间表, D表, pen='g', name='D', symbol='o', symbolBrush='b')
+            # A_ = 右图.plot(時間表, A表, pen='b', name='A', symbol='o', symbolBrush='b')
+            # B_ = 右图.plot(時間表, B表, pen='r', name='B', symbol='o', symbolBrush='b')
+            # C_ = 右图.plot(時間表, C表, pen='y', name='C', symbol='o', symbolBrush='b')
+            # D_ = 右图.plot(時間表, D表, pen='g', name='D', symbol='o', symbolBrush='b')
             A_, B_, C_, D_ = map(lambda 表, 笔, 名: 右图.plot(时间表, 表, pen=笔, name=名, symbol='o', symbolBrush='b'),
                                  [A表, B表, C表, D表], ['b', 'r', 'y', 'g'], ['A', 'B', 'C', 'D'])
 
