@@ -12,9 +12,41 @@ class Ls370:
         self.Ls3 = 管理器.open_resource(f'GPIB0::{GPIB号}::INSTR')
 
     def 读电阻(self):
-        time.sleep(0.1)
+        # time.sleep(0.1)
         with GPIB锁:
             return float(self.Ls3.query("RDGR?"))
+
+    def 读温度(self):
+        # time.sleep(0.1)
+        with GPIB锁:
+            return float(self.Ls3.query(f"KRDG?"))
+
+    def 设PID(self, P=20, I=60, D=0):
+        # time.sleep(0.1)
+        with GPIB锁:
+            self.Ls3.write(f"PID {P}, {I}, {D}")
+
+    def 读加热(self):
+        # time.sleep(0.1)
+        with GPIB锁:
+            return float(self.Ls3.query(f"HTR?"))
+
+    def 读加热量程(self):
+        # time.sleep(0.1)
+        with GPIB锁:
+            return int(self.Ls3.query(f"HTRRNG?"))
+
+    def 设加热量程(self, 量程=0):
+        # time.sleep(0.1)
+        with GPIB锁:
+            self.Ls3.write(f"HTRRNG {量程}")
+
+    def 设温度(self, 值):  # 这里注意用4.1E1这种科学计数法会让340不识别，默认的17位浮点数即可
+        # time.sleep(0.1)
+        with GPIB锁:
+            self.Ls3.write(f"SETP {值}")
+
+
 
 
 class Ls350:
@@ -79,47 +111,47 @@ class Ls340:
     def 读电阻(self, 通道='B'):
         time.sleep(0.1)
         with GPIB锁:
-            return float(self.Ls3.query(f"SRDG?{通道}"))
+            return float(self.Ls3.query(f"SRDG? {通道}"))
 
     def 读温度(self, 通道='B'):
         time.sleep(0.1)
         with GPIB锁:
-            return float(self.Ls3.query(f"KRDG?{通道}"))
+            return float(self.Ls3.query(f"KRDG? {通道}"))
 
     def 读加热(self, 通道=1):
         time.sleep(0.1)
         with GPIB锁:
-            return float(self.Ls3.query(f"HTR?{通道}"))
+            return float(self.Ls3.query(f"HTR? {通道}"))
 
     def 读加热量程(self, 通道=1):
         time.sleep(0.1)
         with GPIB锁:
-            return int(self.Ls3.query(f"RANGE?{通道}"))
+            return int(self.Ls3.query(f"RANGE? {通道}"))
 
     def 设加热量程(self, 通道=1, 量程=0):
         time.sleep(0.1)
         with GPIB锁:
-            self.Ls3.write(f"RANGE{通道},{量程}")
+            self.Ls3.write(f"RANGE {通道}, {量程}")
 
     def 设温度(self, 值, 通道=1):  # 这里注意用4.1E1这种科学计数法会让340不识别，默认的17位浮点数即可
         time.sleep(0.1)
         with GPIB锁:
-            self.Ls3.write(f"SETP{通道},{值}")
+            self.Ls3.write(f"SETP {通道}, {值}")
 
     def 设PID(self, P, I=60, D=0, 通道=1):
         time.sleep(0.1)
         with GPIB锁:
-            self.Ls3.write(f"PID,{通道},{P},{I},{D}")
+            self.Ls3.write(f"PID {通道}, {P}, {I}, {D}")
 
     def 扫引控温(self, 目标温度=50, 扫引速度K每min=1, 加热=3):
         time.sleep(0.1)
         with GPIB锁:
             当前温度 = float(self.Ls3.query(f"KRDG? B"))
-            self.Ls3.write(f'RAMP 1,0,{扫引速度K每min}')
-            self.Ls3.write(f'SETP 1,{当前温度}')
+            self.Ls3.write(f'RAMP 1, 0, {扫引速度K每min}')
+            self.Ls3.write(f'SETP 1, {当前温度}')
             self.Ls3.write(f'RANGE {加热}')
-            self.Ls3.write(f'RAMP 1,1,{扫引速度K每min}')
-            self.Ls3.write(f'SETP 1,{目标温度}')
+            self.Ls3.write(f'RAMP 1, 1, {扫引速度K每min}')
+            self.Ls3.write(f'SETP 1, {目标温度}')
 
 
 class K2182:
