@@ -186,8 +186,17 @@ def 温度计转换范围输出(转换号):
     号 = 转换[转换号]
     Amax, Amin, 底 = 号[0:3]  # 切比雪夫拟合
     チェビシェフ係数 = 号[3:]
-    Inmax = (10 ** Amax * 底 + 底) * 0.9
-    Inmin = (10 ** Amin * 底 + 底) * 1.1
-    Rmin = 10 ** sum(map(lambda 系数, 序数: 系数 * np.cos(np.arccos(0.9) * 序数), チェビシェフ係数, range(len(チェビシェフ係数))))
-    Rmax = 10 ** sum(map(lambda 系数, 序数: 系数 * np.cos(np.arccos(-0.9) * 序数), チェビシェフ係数, range(len(チェビシェフ係数))))
+    Inmax = (10 ** Amax * 底 + 底)
+    Inmin = (10 ** Amin * 底 + 底)
+    Rmin = 10 ** sum(map(lambda 系数, 序数: 系数 * np.cos(np.arccos(0.99) * 序数), チェビシェフ係数, range(len(チェビシェフ係数))))
+    Rmax = 10 ** sum(map(lambda 系数, 序数: 系数 * np.cos(np.arccos(-0.99) * 序数), チェビシェフ係数, range(len(チェビシェフ係数))))
     print(f'{转换号},Inmin={Inmin},Inmax={Inmax},OUTmin={Rmin},OUTmax={Rmax}')
+
+
+if __name__ == '__main__':
+    print(温度计转换范围输出("热导右0T"))
+    l = [x for x in range(50)]
+    输入 = 11000
+    for i in range(50):
+        输入 += l[i] / sum(l) * (28840 - 10700)
+        print(f'{输入}\t{温度计转换(输入, "热导右0T")}')
