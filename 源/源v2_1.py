@@ -1,7 +1,7 @@
 import sys
 import numpy as np
 import time
-from 温度計データ import 转换
+from 源.温度計データ import 转换
 
 
 def 塞贝克系数(塞_温度):  # 温度→V/K
@@ -194,10 +194,10 @@ def 温度计转换范围输出(转换号):
 
 
 if __name__ == '__main__':
-    print(温度计转换范围输出("10kRuOx0402_2左"))
-
-    l = [x for x in range(50)]
-    输入 = 13090
-    for i in range(50):
-        输入 += l[i] / sum(l) * (59217 - 13090)
-        print(f'{输入}\t{温度计转换(输入, "10kRuOx0402_2左")}')
+    print(温度计转换范围输出("热导左宽温度"))
+    #
+    # l = [x for x in range(50)]
+    # 输入 = 13090
+    # for i in range(50):
+    #     输入 += l[i] / sum(l) * (59217 - 13090)
+    #     print(f'{输入}\t{温度计转换(输入, "10kRuOx0402_2左")}')
