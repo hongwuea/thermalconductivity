@@ -51,6 +51,11 @@ class Ls350:
         with GPIB锁:
             self.Ls3.write(f"SETP{通道},{值}")
 
+    def 读设温度(self, 通道=2):
+        time.sleep(0.1)
+        with GPIB锁:
+            return float(self.Ls3.query(f"SETP?{通道}"))
+
     def 设PID(self, P, I=60, D=0, 通道=2):
         time.sleep(0.1)
         with GPIB锁:
@@ -70,6 +75,21 @@ class Ls350:
             self.Ls3.write(f'RAMP 2,1,{扫引速度K每min}')
             time.sleep(0.1)
             self.Ls3.write(f'SETP 2,{目标温度}')
+
+    def 扫引控温VTI(self, 目标温度=30, 扫引速度K每min=0.1, 加热=0):
+        with GPIB锁:
+            time.sleep(0.1)
+            当前温度 = float(self.Ls3.query(f"KRDG? A"))
+            time.sleep(0.1)
+            self.Ls3.write(f'RAMP 1,0,0.1')
+            time.sleep(0.1)
+            self.Ls3.write(f'SETP 1,{当前温度:.5}')
+            time.sleep(0.1)
+            self.Ls3.write(f'RANGE 1,{int(加热)}')
+            time.sleep(0.1)
+            self.Ls3.write(f'RAMP 1,1,{扫引速度K每min}')
+            time.sleep(0.1)
+            self.Ls3.write(f'SETP 1,{目标温度}')
 
 
 class Ls340:
@@ -147,6 +167,68 @@ class K2182:
             self.K2.write(':SENS:CHAN 1')
         return 结果
 
+    def 触发读电压2(self):
+        with GPIB锁:
+            return float(self.K2.query(":fetch?"))
+
+    def REL変更(self):
+        # with GPIB锁:
+        #     self.K2.write(':sens:volt:ref:stat OFF')
+        # time.sleep(0.1)
+        with GPIB锁:
+            self.K2.write(':sens:volt:ref:acq')
+        # time.sleep(0.1)
+        with GPIB锁:
+            self.K2.write(':sens:volt:ref:stat ON')
+
+    def RELOFF(self):
+        with GPIB锁:
+            self.K2.write(':sens:volt:ref:stat OFF')
+
+    def 读REL状態(self):
+        with GPIB锁:
+            return float(self.K2.query(':sens:volt:ref:stat?'))
+
+    def 读REL(self):
+        with GPIB锁:
+            return float(self.K2.query(":sens:volt:ref?"))
+
+    def ゲイン変更(self, ゲイン):
+        with GPIB锁:
+            self.K2.write(f':OUTPut:GAIN {ゲイン}')
+            print('ゲイン変更')
+            print(self.K2.query(":OUTPut:GAIN?"))
+
+    def 设ゲイン(self, ゲイン):
+        with GPIB锁:
+            self.K2.write(f':OUTPut:GAIN {ゲイン}')
+
+    def 读ゲイン(self):
+        with GPIB锁:
+            return float(self.K2.query(":OUTPut:GAIN?"))
+
+    def 设レンジ(self, レンジ):
+        with GPIB锁:
+            self.K2.write(f':sens:volt:RANGe {レンジ}')
+
+    def 读レンジ(self):
+        with GPIB锁:
+            return float(self.K2.query(":sens:volt:RANGe?"))
+
+    def 设頻度(self, PLC):
+        with GPIB锁:
+            self.K2.write(f':sens:volt:nplc {PLC}')
+
+    def 读頻度(self):
+        with GPIB锁:
+            return float(self.K2.query(":sens:volt:nplc?"))
+
+    def 读电压t(self):
+        with GPIB锁:
+            t = time.time()
+            return float(self.K2.query(":DATA:FRESH?")), t
+
+
 
 class K2400:
     def __init__(self, GPIB号):
@@ -184,6 +266,15 @@ class K195:
             return float(self.K2.query("X").split("NDCV")[1])
 
 
+class K199:
+    def __init__(self, GPIB号):
+        self.K2 = 管理器.open_resource(f'GPIB0::{GPIB号}::INSTR')
+
+    def 读電流(self):
+        with GPIB锁:
+            return float(self.K2.query("").split("NDCI")[1])
+
+
 class K6220:
     def __init__(self, GPIB号):
         self.K6 = 管理器.open_resource(f'GPIB0::{GPIB号}::INSTR')
@@ -194,6 +285,51 @@ class K6220:
             if 电流:
                 self.K6.write(':CURR:RANG %E' % 电流)
             self.K6.write(":CURR %E" % 电流)
+
+    def 设電流(self, 電流):
+        with GPIB锁:
+            self.K6.write(f':Current {電流}')
+
+    def 读電流(self):
+        with GPIB锁:
+            return float(self.K6.query(":Current?"))
+
+    def 读レンジ(self):
+        with GPIB锁:
+            return float(self.K6.query("CURRent:RANGe?"))
+
+    def 设レンジ(self, レンジ):
+        with GPIB锁:
+            self.K6.write(f'CURRent:RANGe {レンジ}')
+
+
+class K6221:
+    def __init__(self, GPIB号):
+        self.K6 = 管理器.open_resource(f'GPIB0::{GPIB号}::INSTR')
+
+    def 设電流(self, 電流):
+        with GPIB锁:
+            self.K6.write(f':Current {電流}')
+
+    def 读電流(self):
+        with GPIB锁:
+            return float(self.K6.query(":Current?"))
+
+    def 读レンジ(self):
+        with GPIB锁:
+            return float(self.K6.query("CURRent:RANGe?"))
+
+    def 设レンジ(self, レンジ):
+        with GPIB锁:
+            self.K6.write(f'CURRent:RANGe {レンジ}')
+
+    def 读出力(self):
+        with GPIB锁:
+            return float(self.K6.query("OUTPut:STATe?"))
+
+    def 设出力(self, 出力):
+        with GPIB锁:
+            self.K6.write(f'OUTPut:STATe {出力}')
 
 
 class K220:
@@ -222,7 +358,7 @@ class SR850:
         'θ': 4,
     }
 
-    def __init__(self, GPIB号):
+    def __init__(self, GPIB号) -> object:
         self.SR8 = 管理器.open_resource(f'GPIB0::{GPIB号}::INSTR')
 
     def 读取(self, 通道):
@@ -232,6 +368,57 @@ class SR850:
     def 设频率(self, 频率):
         with GPIB锁:
             self.SR8.write(f"FREQ {频率}")
+
+    # def 读频率(self):
+    #     with GPIB锁:
+    #         return float(self.SR8.query(f"FREQ?"))
+
+    def 读频率(self):
+        with GPIB锁:
+            return float(self.SR8.query('FREQ?\n'))
+
+    def リザーブ変更(self, リザーブ):  # 0だとminになる
+        with GPIB锁:
+            self.SR8.write(f"RSRV {リザーブ}")
+            print('リザーブ変更')
+            print(float(self.SR8.query('RSRV?\n')))
+
+    def レンジ変更(self, レンジ):
+        with GPIB锁:
+            self.SR8.write(f"SENS {レンジ}")
+            print('レンジ変更')
+            print(float(self.SR8.query('SENS?\n')))
+
+    def 自動調整(self):
+        STB3 = float(self.SR8.query('*STB?3\n'))
+        STB6 = float(self.SR8.query('*STB?6\n'))
+
+        if STB3 and STB6 == 1:
+            LIAS0 = float(self.SR8.query('LIAS?0\n'))
+            LIAS2 = float(self.SR8.query('LIAS?2\n'))
+
+            if LIAS0 == 1 and LIAS2 == 0:
+                RSRV = float(self.SR8.query('RSRV?\n'))
+                RSRV = RSRV + 1
+                self.SR8.write(f'RSRV {RSRV}')
+
+                if RSRV >= 3:
+                    SENS = float(self.SR8.query('SENS?\n'))
+                    SENS = SENS + 1
+                    self.SR8.write(f'SENS {SENS}')
+                    self.SR8.write('RSRV 0')
+                time.sleep(25)
+
+            if LIAS2 == 1:
+                SENS = float(self.SR8.query('SENS?\n'))
+                SENS = SENS + 1
+                self.SR8.write(f'SENS {SENS}')
+                self.SR8.write('RSRV 0')
+                time.sleep(25)
+
+        self.SR8.write('*CLS')
+        time.sleep(3)
+
 
 if __name__ == '__main__':
     print(管理器.list_resources())
