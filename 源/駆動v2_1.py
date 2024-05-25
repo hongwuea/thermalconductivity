@@ -49,6 +49,11 @@ class Ls350:
         with GPIB锁:
             return float(self.Ls3.query(f"SRDG? {通道}"))
 
+    def 读电阻t(self, 通道='B'):
+        with GPIB锁:
+            t = time.time()
+            return float(self.Ls3.query(f"SRDG? {通道}")), t
+
     def 读温度(self, 通道='B'):
         with GPIB锁:
             return float(self.Ls3.query(f"KRDG? {通道}"))
@@ -134,6 +139,7 @@ class Ls340:
 class K2182:
     def __init__(self, GPIB号):
         self.K2 = 管理器.open_resource(f'GPIB0::{GPIB号}::INSTR')
+        self.K2.write(':SENS:VOLT:DFIL OFF')
 
     def 读电压(self):
         with GPIB锁:
